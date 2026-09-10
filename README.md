@@ -3,7 +3,7 @@
 日本の街を破壊して、そのあと建て直す 3D ブラウザゲーム。
 **`index.html` 1枚だけ**で動きます。ビルド不要・外部ライブラリなし・オフラインOK。
 
-▶ **あそぶ**: https://zau0055.github.io/kaiju-nippon/
+▶ **あそぶ**: (https://zau0055.github.io/monster-japan/)
 
 ## あそびかた
 
