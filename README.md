@@ -13,7 +13,7 @@
 **`index.html` 1枚だけ**で動きます。ビルド不要・外部ライブラリなし・オフラインOK。
 **PC・スマホ両対応**（スマホは横持ち）。
 
-▶ **あそぶ**: https://USERNAME.github.io/monster-japan/
+▶ **あそぶ**: https://zau0055.github.io/monster-japan/
 
 ## あそびかた（PC）
 
