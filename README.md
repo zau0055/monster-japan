@@ -1,6 +1,3 @@
-[README.md](https://github.com/user-attachments/files/32035819/README.md)
-[怪獣無双_ニッポン破壊録.html](https://github.com/user-attachments/files/32035792/_.html)
-[index.html](https://github.com/user-attachments/files/32034332/index.html)
 # 怪獣無双 ニッポン破壊録
 
 日本の街を破壊して、そのあと建て直す 3D ブラウザゲーム。
