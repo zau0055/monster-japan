@@ -1,0 +1,3035 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>怪獣無双 ニッポン破壊録</title>
+<style>
+:root{
+  --red:#ff2b2b; --red2:#ff6a3d; --yel:#ffd400; --ink:#0a0a0c; --paper:#f4efe4;
+  --cy:#37e6ff; --grn:#5dff8f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#05060a;color:#fff;
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo","Noto Sans JP",sans-serif;
+  -webkit-font-smoothing:antialiased;user-select:none;}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+#ui{position:fixed;inset:0;pointer-events:none;z-index:10}
+.pane{pointer-events:auto}
+.hidden{display:none !important}
+
+/* ---------- タイトル ---------- */
+#title{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;
+  background:
+   radial-gradient(120% 90% at 50% 0%,#3a0b0b 0%,#120508 45%,#05060a 100%);
+  overflow:auto;padding:min(4vh,32px) min(4vw,40px);}
+#title:before{content:"";position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);}
+.tt-wrap{max-width:1180px;margin:0 auto;width:100%;position:relative}
+.tt-kicker{font-size:12px;letter-spacing:.5em;color:var(--yel);opacity:.9;margin-bottom:6px}
+.tt-main{font-size:clamp(34px,7vw,86px);font-weight:900;line-height:.95;letter-spacing:.02em;
+  background:linear-gradient(180deg,#fff 0%,#ffd400 45%,#ff2b2b 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 42px rgba(255,60,30,.35);filter:drop-shadow(0 6px 0 rgba(0,0,0,.55));}
+.tt-sub{margin-top:10px;font-size:clamp(12px,1.5vw,16px);color:#ffb9a8;letter-spacing:.18em}
+.sec{margin-top:26px}
+.sec-h{font-size:13px;letter-spacing:.34em;color:#ff8f7a;border-left:4px solid var(--red);
+  padding-left:10px;margin-bottom:12px;font-weight:700}
+.grid{display:grid;gap:12px}
+.g6{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:14px;cursor:pointer;
+  transition:.14s transform,.14s border-color,.14s background;overflow:hidden}
+.card:hover{transform:translateY(-3px);border-color:rgba(255,212,0,.6)}
+.card.sel{border-color:var(--yel);background:linear-gradient(160deg,rgba(255,212,0,.18),rgba(255,43,43,.10));
+  box-shadow:0 0 0 2px rgba(255,212,0,.35) inset,0 10px 30px rgba(255,80,0,.18)}
+.card .ic{font-size:30px;line-height:1}
+.card .nm{font-weight:900;font-size:17px;margin-top:6px;letter-spacing:.04em}
+.card .sz{font-size:11px;color:var(--yel);margin-top:2px;font-weight:700;letter-spacing:.08em}
+.card .ds{font-size:11.5px;color:#cfc9c2;margin-top:7px;line-height:1.55}
+.stage-card{min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
+.stage-card .nm{font-size:20px}
+.sizerow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:14px 16px}
+.sizerow input[type=range]{flex:1;min-width:200px;accent-color:var(--red)}
+#sizeVal{font-weight:900;font-size:26px;color:var(--yel);min-width:120px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.chip{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(0,0,0,.3);cursor:pointer;font-weight:700}
+.chip:hover{border-color:var(--yel);color:var(--yel)}
+.btn{pointer-events:auto;display:inline-block;border:0;cursor:pointer;font-weight:900;letter-spacing:.14em;
+  padding:16px 44px;border-radius:12px;font-size:19px;color:#1a0000;
+  background:linear-gradient(180deg,#ffe66a,#ffb020 60%,#ff5a1f);
+  box-shadow:0 6px 0 #8c2b06,0 14px 30px rgba(255,90,30,.35);transition:.1s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #8c2b06}
+.startrow{margin:26px 0 10px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.keys{font-size:11.5px;color:#a49f98;line-height:1.9}
+.keys b{color:#fff;background:#26242a;border:1px solid #4a4750;border-radius:5px;
+  padding:1px 7px;margin-right:6px;font-weight:800;font-size:11px}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;inset:0;pointer-events:none;font-variant-numeric:tabular-nums}
+.hud-tl{position:absolute;top:14px;left:14px;display:flex;gap:8px;flex-wrap:wrap;max-width:60vw}
+.res{background:rgba(6,8,14,.62);border:1px solid rgba(255,255,255,.14);border-radius:10px;
+  padding:7px 11px;font-size:13px;font-weight:800;display:flex;gap:7px;align-items:center;
+  backdrop-filter:blur(6px)}
+.res i{font-style:normal;font-size:15px}
+.res .v{color:var(--yel)}
+.hud-tr{position:absolute;top:14px;right:14px;text-align:right}
+.score{font-size:34px;font-weight:900;color:#fff;line-height:1;
+  text-shadow:0 3px 0 rgba(0,0,0,.6),0 0 26px rgba(255,60,20,.5)}
+.score small{font-size:12px;color:#ff9c8a;letter-spacing:.25em;display:block;margin-bottom:2px;font-weight:700}
+.score2{margin-top:10px;font-size:18px;font-weight:900;color:var(--grn)}
+.score2 small{font-size:10px;color:#8fe0a6;letter-spacing:.22em;display:block;font-weight:700}
+.hud-bl{position:absolute;left:14px;bottom:14px;width:290px}
+.bar{height:13px;border-radius:7px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);
+  overflow:hidden;margin-top:5px}
+.bar>div{height:100%;width:100%;transition:width .12s linear}
+.bar.hp>div{background:linear-gradient(90deg,#ff2b2b,#ff8a3d)}
+.bar.en>div{background:linear-gradient(90deg,#2f8bff,#37e6ff)}
+.blab{font-size:10.5px;letter-spacing:.24em;color:#c9c4bc;font-weight:800}
+.hud-bc{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);text-align:center;
+  font-size:12px;color:#c8c3bb;background:rgba(6,8,14,.5);padding:7px 16px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.1)}
+#modeBadge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:clamp(28px,6vw,62px);font-weight:900;letter-spacing:.2em;opacity:0;
+  text-shadow:0 0 40px rgba(255,60,20,.8);pointer-events:none}
+#combo{position:absolute;left:50%;top:22%;transform:translateX(-50%);text-align:center;opacity:0}
+#combo .n{font-size:56px;font-weight:900;color:var(--yel);line-height:1;
+  text-shadow:0 4px 0 #7a2b00,0 0 30px rgba(255,180,0,.7)}
+#combo .t{font-size:14px;font-weight:900;letter-spacing:.3em;color:#ff7a4d}
+#cross{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);
+  opacity:.85}
+#cross:before,#cross:after{content:"";position:absolute;background:rgba(255,255,255,.85)}
+#cross:before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
+#cross:after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%)}
+#toasts{position:absolute;right:16px;top:120px;display:flex;flex-direction:column;
+  gap:6px;align-items:flex-end}
+.toast{background:rgba(10,12,18,.8);border-left:3px solid var(--yel);padding:7px 13px;
+  border-radius:0 8px 8px 0;font-size:12.5px;font-weight:700;animation:tin .25s ease-out}
+@keyframes tin{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+
+/* ---------- 建設バー ---------- */
+#buildbar{position:absolute;left:316px;right:14px;bottom:50px;
+  display:flex;gap:8px;pointer-events:auto;overflow-x:auto;padding:6px;justify-content:flex-start}
+@media (max-width:1100px){#buildbar{left:14px;bottom:96px}}
+.bslot{min-width:104px;background:rgba(8,10,16,.78);border:1px solid rgba(255,255,255,.16);
+  border-radius:11px;padding:9px 10px;cursor:pointer;transition:.12s}
+.bslot:hover{border-color:rgba(255,212,0,.7)}
+.bslot.sel{border-color:var(--yel);background:rgba(255,212,0,.15);
+  box-shadow:0 0 0 2px rgba(255,212,0,.3) inset}
+.bslot.no{opacity:.42}
+.bslot .k{font-size:10px;color:#8f8a83;font-weight:800}
+.bslot .n{font-size:13px;font-weight:900;margin:2px 0 4px}
+.bslot .c{font-size:10.5px;color:#ffd400;font-weight:700;line-height:1.5}
+.bslot .c b{color:#fff;font-weight:700}
+
+/* ---------- オーバーレイ ---------- */
+.overlay{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;
+  background:rgba(4,5,9,.82);backdrop-filter:blur(5px)}
+.panel{background:#0f1118;border:1px solid rgba(255,255,255,.16);border-radius:18px;
+  padding:30px 36px;max-width:640px;width:90%;text-align:center}
+.panel h2{font-size:30px;font-weight:900;letter-spacing:.1em;margin-bottom:6px}
+.panel p{color:#b8b3ab;font-size:13.5px;line-height:1.9;margin-bottom:16px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:18px 0}
+.stat{background:rgba(255,255,255,.05);border-radius:10px;padding:10px}
+.stat .l{font-size:10px;letter-spacing:.2em;color:#8f8a83;font-weight:800}
+.stat .v{font-size:22px;font-weight:900;color:var(--yel);margin-top:3px}
+.mini{font-size:11px;color:#7d7871;margin-top:14px}
+#loading{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+  background:#05060a;flex-direction:column;gap:14px}
+#loading .l1{font-size:15px;letter-spacing:.4em;color:var(--yel);font-weight:900}
+#loading .l2{font-size:12px;color:#7d7871}
+.spin{width:44px;height:44px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--red);
+  border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20}
+#vig{position:fixed;inset:0;pointer-events:none;z-index:12;
+  box-shadow:inset 0 0 190px rgba(0,0,0,.65)}
+#dmgv{position:fixed;inset:0;pointer-events:none;z-index:13;opacity:0;
+  box-shadow:inset 0 0 160px rgba(255,0,0,.9)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#3a3740;border-radius:5px}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="ui">
+  <div id="vig"></div>
+  <div id="dmgv"></div>
+
+  <div id="hud" class="hidden">
+    <div class="hud-tl" id="resbar"></div>
+    <div class="hud-tr">
+      <div class="score"><small>破壊スコア</small><span id="scDes">0</span></div>
+      <div class="score2"><small>復興スコア</small><span id="scBld">0</span> <span style="font-size:11px;color:#8fe0a6">人口 <span id="pop">0</span></span></div>
+    </div>
+    <div class="hud-bl">
+      <div class="blab">たいりょく</div><div class="bar hp"><div id="bHp"></div></div>
+      <div class="blab" style="margin-top:7px">エネルギー</div><div class="bar en"><div id="bEn"></div></div>
+      <div style="margin-top:8px;font-size:12px;font-weight:800;color:#fff" id="charLabel"></div>
+    </div>
+    <div class="hud-bc" id="hint"></div>
+    <div id="modeBadge"></div>
+    <div id="combo"><div class="n">0</div><div class="t">HIT COMBO</div></div>
+    <div id="cross" class="hidden"></div>
+    <div id="toasts"></div>
+    <div id="buildbar" class="hidden"></div>
+  </div>
+</div>
+
+<div id="title">
+  <div class="tt-wrap">
+    <div class="tt-kicker">ＮＩＰＰＯＮ ＤＥＳＴＲＵＣＴＩＯＮ</div>
+    <h1 class="tt-main">怪獣無双<br>ニッポン破壊録</h1>
+    <div class="tt-sub">壊してやるぜぇ！　……そのあと、建て直してやるぜぇ！</div>
+
+    <div class="sec">
+      <div class="sec-h">怪獣をえらべ</div>
+      <div class="grid g6" id="charGrid"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">体の大きさ（自由に変えられる）</div>
+      <div class="sizerow">
+        <input type="range" id="sizeSlider" min="0" max="1000" value="600">
+        <div id="sizeVal">50.0 m</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip" data-size="0.35">ネズミ 0.35m</div>
+          <div class="chip" data-size="1.2">ホビット 1.2m</div>
+          <div class="chip" data-size="8">クルマ級 8m</div>
+          <div class="chip" data-size="50">定番 50m</div>
+          <div class="chip" data-size="120">超巨大 120m</div>
+          <div class="chip" data-size="300">神 300m</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h">ステージ</div>
+      <div class="grid g2" id="stageGrid"></div>
+    </div>
+
+    <div class="startrow">
+      <button class="btn" id="startBtn">暴 れ る</button>
+      <div class="keys">
+        <div><b>WASD</b>移動　<b>マウス</b>視点　<b>Space</b>ジャンプ／上昇　<b>Ctrl</b>下降　<b>F</b>飛行きりかえ</div>
+        <div><b>左クリック</b>なぐる　<b>右クリック</b>熱線　<b>Q</b>咆哮　<b>G</b>つかむ／投げる　<b>B</b>建設モード　<b>N</b>昼夜</div>
+      </div>
+    </div>
+    <div class="mini" style="color:#6c6760">※ 初回クリックで画面がロックされます。<b style="color:#aaa">Esc</b> で解除・ポーズ。</div>
+  </div>
+</div>
+
+<div id="loading" class="hidden">
+  <div class="spin"></div>
+  <div class="l1">ニッポン を せいせい中</div>
+  <div class="l2" id="loadTxt">街をつくっています…</div>
+</div>
+
+<div id="pause" class="overlay hidden">
+  <div class="panel">
+    <h2>ポーズ</h2>
+    <p>画面をクリックすると再開します。</p>
+    <div class="statgrid" id="pauseStats"></div>
+    <button class="btn" id="resumeBtn">つづける</button>
+    <button class="btn" id="titleBtn" style="background:linear-gradient(180deg,#9aa0ad,#5d6472);box-shadow:0 6px 0 #2c313b;color:#fff">タイトルへ</button>
+    <div class="mini" id="pauseKeys"></div>
+  </div>
+</div>
+
+<div id="dead" class="overlay hidden">
+  <div class="panel">
+    <h2 style="color:var(--red)">や ら れ た …</h2>
+    <p>自衛隊にやられた。だが怪獣は何度でもよみがえる。</p>
+    <div class="statgrid" id="deadStats"></div>
+    <button class="btn" id="reviveBtn">よ み が え る</button>
+  </div>
+</div>
+
+<div id="flash"></div>
+<script>
+'use strict';
+/* ============================================================
+   怪獣無双 ニッポン破壊録  /  KAIJU MUSOU - NIPPON HAKAI ROKU
+   単一HTML・WebGL2・依存なし
+   ============================================================ */
+
+//////////////////// 数学 ////////////////////
+const PI = Math.PI, TAU = PI * 2;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const rnd = (a = 1, b) => b === undefined ? Math.random() * a : a + Math.random() * (b - a);
+const rndi = (a, b) => Math.floor(rnd(a, b + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const smooth = (a, b, t) => a + (b - a) * (1 - Math.exp(-t));
+const sign = Math.sign;
+
+// 決定的乱数（ステージ生成用）
+function makeRng(seed) {
+  let s = seed >>> 0 || 1;
+  return function () {
+    s ^= s << 13; s >>>= 0;
+    s ^= s >> 17;
+    s ^= s << 5; s >>>= 0;
+    return s / 4294967296;
+  };
+}
+
+function m4identity(o) {
+  o[0] = 1; o[1] = 0; o[2] = 0; o[3] = 0;
+  o[4] = 0; o[5] = 1; o[6] = 0; o[7] = 0;
+  o[8] = 0; o[9] = 0; o[10] = 1; o[11] = 0;
+  o[12] = 0; o[13] = 0; o[14] = 0; o[15] = 1;
+  return o;
+}
+function m4perspective(o, fovy, aspect, near, far) {
+  const f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+  o[0] = f / aspect; o[1] = 0; o[2] = 0; o[3] = 0;
+  o[4] = 0; o[5] = f; o[6] = 0; o[7] = 0;
+  o[8] = 0; o[9] = 0; o[10] = (far + near) * nf; o[11] = -1;
+  o[12] = 0; o[13] = 0; o[14] = 2 * far * near * nf; o[15] = 0;
+  return o;
+}
+function m4lookAt(o, ex, ey, ez, cx, cy, cz, ux, uy, uz) {
+  let zx = ex - cx, zy = ey - cy, zz = ez - cz;
+  let l = Math.hypot(zx, zy, zz) || 1; zx /= l; zy /= l; zz /= l;
+  let xx = uy * zz - uz * zy, xy = uz * zx - ux * zz, xz = ux * zy - uy * zx;
+  l = Math.hypot(xx, xy, xz) || 1; xx /= l; xy /= l; xz /= l;
+  const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+  o[0] = xx; o[1] = yx; o[2] = zx; o[3] = 0;
+  o[4] = xy; o[5] = yy; o[6] = zy; o[7] = 0;
+  o[8] = xz; o[9] = yz; o[10] = zz; o[11] = 0;
+  o[12] = -(xx * ex + xy * ey + xz * ez);
+  o[13] = -(yx * ex + yy * ey + yz * ez);
+  o[14] = -(zx * ex + zy * ey + zz * ez);
+  o[15] = 1;
+  return o;
+}
+function m4mul(o, a, b) {
+  for (let i = 0; i < 4; i++) {
+    const b0 = b[i * 4], b1 = b[i * 4 + 1], b2 = b[i * 4 + 2], b3 = b[i * 4 + 3];
+    o[i * 4] = b0 * a[0] + b1 * a[4] + b2 * a[8] + b3 * a[12];
+    o[i * 4 + 1] = b0 * a[1] + b1 * a[5] + b2 * a[9] + b3 * a[13];
+    o[i * 4 + 2] = b0 * a[2] + b1 * a[6] + b2 * a[10] + b3 * a[14];
+    o[i * 4 + 3] = b0 * a[3] + b1 * a[7] + b2 * a[11] + b3 * a[15];
+  }
+  return o;
+}
+// クォータニオン
+function qFromAxis(out, x, y, z, ang) {
+  const h = ang * .5, s = Math.sin(h);
+  out[0] = x * s; out[1] = y * s; out[2] = z * s; out[3] = Math.cos(h);
+  return out;
+}
+function qMul(o, a, b) {
+  const ax = a[0], ay = a[1], az = a[2], aw = a[3];
+  const bx = b[0], by = b[1], bz = b[2], bw = b[3];
+  o[0] = ax * bw + aw * bx + ay * bz - az * by;
+  o[1] = ay * bw + aw * by + az * bx - ax * bz;
+  o[2] = az * bw + aw * bz + ax * by - ay * bx;
+  o[3] = aw * bw - ax * bx - ay * by - az * bz;
+  return o;
+}
+function qNorm(q) {
+  const l = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  q[0] /= l; q[1] /= l; q[2] /= l; q[3] /= l; return q;
+}
+const QI = [0, 0, 0, 1];
+const _qy = new Float32Array(4);
+function qYaw(a) { const h = a * .5; _qy[0] = 0; _qy[1] = Math.sin(h); _qy[2] = 0; _qy[3] = Math.cos(h); return _qy; }
+
+// 色ユーティリティ
+function hex(h) { return [((h >> 16) & 255) / 255, ((h >> 8) & 255) / 255, (h & 255) / 255]; }
+function shade(c, k) { return [clamp(c[0] * k, 0, 1), clamp(c[1] * k, 0, 1), clamp(c[2] * k, 0, 1)]; }
+function jitter(c, a) { const k = 1 + rnd(-a, a); return shade(c, k); }
+
+//////////////////// WebGL ////////////////////
+const FLOATS_PER_INST = 14; // pos3 half3 quat4 color3 style1
+
+const VS = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNormal;
+layout(location=2) in vec3 iPos;
+layout(location=3) in vec3 iHalf;
+layout(location=4) in vec4 iQuat;
+layout(location=5) in vec4 iCol;
+uniform mat4 uVP;
+out vec3 vN; out vec3 vC; out vec3 vL; out vec3 vH; out float vS; out vec3 vW; out float vSeed;
+vec3 qrot(vec4 q, vec3 v){ return v + 2.0*cross(q.xyz, cross(q.xyz, v) + q.w*v); }
+void main(){
+  vec3 local = aPos * iHalf;
+  vec3 wp = qrot(iQuat, local) + iPos;
+  vN = normalize(qrot(iQuat, aNormal));
+  vC = iCol.rgb; vS = iCol.a;
+  vL = aPos; vH = iHalf; vW = wp;
+  vSeed = fract(sin(iPos.x*0.317 + iPos.z*0.719 + iPos.y*0.113)*43758.5453);
+  gl_Position = uVP * vec4(wp, 1.0);
+}`;
+
+const FS = `#version 300 es
+precision highp float;
+in vec3 vN; in vec3 vC; in vec3 vL; in vec3 vH; in float vS; in vec3 vW; in float vSeed;
+uniform vec3 uSun, uSunCol, uAmb, uFogCol, uCam;
+uniform float uFogD, uNight, uTime;
+out vec4 frag;
+float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+void main(){
+  vec3 base = vC;
+  float emis = 0.0;
+  vec3 an = abs(vN);
+  bool topface = an.y > 0.7;
+  vec2 uv;
+  if(topface) uv = vec2(vL.x*vH.x, vL.z*vH.z);
+  else if(an.x > an.z) uv = vec2(vL.z*vH.z, vL.y*vH.y);
+  else uv = vec2(vL.x*vH.x, vL.y*vH.y);
+
+  if(vS > 0.5 && vS < 1.5){
+    // 建物：窓
+    if(!topface){
+      vec2 cell = vec2(3.2, 3.6);
+      vec2 gi = floor(uv/cell);
+      vec2 g = fract(uv/cell);
+      float w = step(0.16,g.x)*step(g.x,0.84)*step(0.22,g.y)*step(g.y,0.78);
+      float lit = step(0.42, h21(gi + vec2(vSeed*97.0)));
+      base = mix(base, base*0.55, w*0.35);
+      float night = uNight;
+      emis = w * lit * night * 1.25;
+      vec3 wc = mix(vec3(1.0,0.92,0.68), vec3(0.72,0.88,1.0), h21(gi+vec2(3.3,7.1)));
+      base = mix(base, wc, w*lit*night*0.9);
+      base = mix(base, base*1.12, w*(1.0-night)*0.6);
+    } else {
+      base *= 0.88;
+      float r = h21(floor(uv/2.5));
+      base *= 0.92 + r*0.16;
+    }
+  } else if(vS > 1.5 && vS < 2.5){
+    // ネオン・ビーム
+    emis = 1.6;
+  } else if(vS > 2.5 && vS < 3.5){
+    // 瓦屋根
+    float s = fract(uv.x/0.9);
+    base *= 0.86 + 0.24*smoothstep(0.0,0.35,abs(s-0.5));
+    float t = fract(uv.y/1.1);
+    base *= 0.94 + 0.10*step(0.5,t);
+  } else if(vS > 3.5 && vS < 4.5){
+    // 道路（上面に白線）
+    if(topface){
+      float lane = abs(fract(uv.x/ max(vH.x*2.0,0.001) + 0.5) - 0.5);
+      float cx = abs(uv.x);
+      float dash = step(0.35, fract(uv.y/6.0));
+      float line = step(cx, 0.35) * dash;
+      float edge = step(vH.x-0.55, cx) * step(cx, vH.x-0.15);
+      base = mix(base, vec3(0.92,0.90,0.80), clamp(line+edge,0.0,1.0));
+      base *= 0.95 + 0.1*h21(floor(uv*0.7));
+    }
+  } else if(vS > 4.5 && vS < 5.5){
+    // 草地・田んぼ
+    float n = h21(floor(vW.xz*0.35));
+    float n2 = h21(floor(vW.xz*1.7));
+    base *= 0.86 + n*0.22 + n2*0.06;
+    if(topface) base *= 1.03;
+  } else if(vS > 5.5 && vS < 6.5){
+    // 水面
+    float w1 = sin(vW.x*0.35 + uTime*1.3) * sin(vW.z*0.27 - uTime*0.9);
+    base *= 0.86 + 0.20*w1;
+    emis = 0.06 + 0.06*w1;
+  }
+
+  float ndl = max(dot(vN, uSun), 0.0);
+  float up = vN.y*0.5+0.5;
+  vec3 toCam = normalize(uCam - vW);
+  float fill = max(dot(vN, toCam), 0.0);
+  vec3 col = base * (uAmb * (0.55 + 0.6*up) + uSunCol * ndl + uAmb * fill * 0.34);
+  col += base * emis * (1.0 + uNight*0.8);
+  // 面ごとの陰影で立体感
+  col *= 0.90 + 0.10*an.x + 0.16*max(vN.y,0.0);
+
+  float d = length(vW - uCam);
+  float f = 1.0 - exp(-pow(d*uFogD, 2.0));
+  col = mix(col, uFogCol, clamp(f, 0.0, 1.0));
+  frag = vec4(col, 1.0);
+}`;
+
+let gl = null, prog = null, U = {};
+
+function compile(src, type) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+
+// 単位キューブ（-1..1）24頂点
+function cubeGeom() {
+  const p = [], n = [], idx = [];
+  const faces = [
+    [[1, 0, 0], [[1, -1, -1], [1, 1, -1], [1, 1, 1], [1, -1, 1]]],
+    [[-1, 0, 0], [[-1, -1, 1], [-1, 1, 1], [-1, 1, -1], [-1, -1, -1]]],
+    [[0, 1, 0], [[-1, 1, -1], [-1, 1, 1], [1, 1, 1], [1, 1, -1]]],
+    [[0, -1, 0], [[-1, -1, 1], [-1, -1, -1], [1, -1, -1], [1, -1, 1]]],
+    [[0, 0, 1], [[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]]],
+    [[0, 0, -1], [[1, -1, -1], [-1, -1, -1], [-1, 1, -1], [1, 1, -1]]],
+  ];
+  faces.forEach((f, fi) => {
+    f[1].forEach(v => { p.push(v[0], v[1], v[2]); n.push(f[0][0], f[0][1], f[0][2]); });
+    const b = fi * 4;
+    idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+  });
+  return { pos: new Float32Array(p), nrm: new Float32Array(n), idx: new Uint16Array(idx) };
+}
+
+class Batch {
+  constructor(cap) {
+    this.cap = cap;
+    this.data = new Float32Array(cap * FLOATS_PER_INST);
+    this.count = 0;
+    this.buf = gl.createBuffer();
+    this.vao = gl.createVertexArray();
+    gl.bindVertexArray(this.vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, GEO.posBuf);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, GEO.nrmBuf);
+    gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buf);
+    gl.bufferData(gl.ARRAY_BUFFER, this.data.byteLength, gl.DYNAMIC_DRAW);
+    const st = FLOATS_PER_INST * 4;
+    const set = (loc, size, off) => {
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, st, off * 4);
+      gl.vertexAttribDivisor(loc, 1);
+    };
+    set(2, 3, 0); set(3, 3, 3); set(4, 4, 6); set(5, 4, 10);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, GEO.idxBuf);
+    gl.bindVertexArray(null);
+    this.dirty = true;
+  }
+  clear() { this.count = 0; this.dirty = true; }
+  // 軸そろえ（Y回転のみ）
+  box(px, py, pz, hx, hy, hz, rotY, r, g, b, style) {
+    if (this.count >= this.cap) return;
+    const d = this.data, o = this.count * FLOATS_PER_INST;
+    d[o] = px; d[o + 1] = py; d[o + 2] = pz;
+    d[o + 3] = hx; d[o + 4] = hy; d[o + 5] = hz;
+    if (rotY) { const h = rotY * .5; d[o + 6] = 0; d[o + 7] = Math.sin(h); d[o + 8] = 0; d[o + 9] = Math.cos(h); }
+    else { d[o + 6] = 0; d[o + 7] = 0; d[o + 8] = 0; d[o + 9] = 1; }
+    d[o + 10] = r; d[o + 11] = g; d[o + 12] = b; d[o + 13] = style;
+    this.count++; this.dirty = true;
+  }
+  // 任意回転
+  boxQ(px, py, pz, hx, hy, hz, q, r, g, b, style) {
+    if (this.count >= this.cap) return;
+    const d = this.data, o = this.count * FLOATS_PER_INST;
+    d[o] = px; d[o + 1] = py; d[o + 2] = pz;
+    d[o + 3] = hx; d[o + 4] = hy; d[o + 5] = hz;
+    d[o + 6] = q[0]; d[o + 7] = q[1]; d[o + 8] = q[2]; d[o + 9] = q[3];
+    d[o + 10] = r; d[o + 11] = g; d[o + 12] = b; d[o + 13] = style;
+    this.count++; this.dirty = true;
+  }
+  upload() {
+    if (!this.dirty || this.count === 0) { this.dirty = false; return; }
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.data.subarray(0, this.count * FLOATS_PER_INST));
+    this.dirty = false;
+  }
+  draw() {
+    if (this.count === 0) return;
+    gl.bindVertexArray(this.vao);
+    gl.drawElementsInstanced(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0, this.count);
+    gl.bindVertexArray(null);
+  }
+}
+
+let GEO = {};
+
+function initGL(canvas) {
+  gl = canvas.getContext('webgl2', {
+    antialias: true, alpha: false, depth: true,
+    powerPreference: 'high-performance', preserveDrawingBuffer: false
+  });
+  if (!gl) return false;
+  prog = gl.createProgram();
+  gl.attachShader(prog, compile(VS, gl.VERTEX_SHADER));
+  gl.attachShader(prog, compile(FS, gl.FRAGMENT_SHADER));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+  ['uVP', 'uSun', 'uSunCol', 'uAmb', 'uFogCol', 'uCam', 'uFogD', 'uNight', 'uTime']
+    .forEach(k => U[k] = gl.getUniformLocation(prog, k));
+  const c = cubeGeom();
+  GEO.posBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, GEO.posBuf); gl.bufferData(gl.ARRAY_BUFFER, c.pos, gl.STATIC_DRAW);
+  GEO.nrmBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, GEO.nrmBuf); gl.bufferData(gl.ARRAY_BUFFER, c.nrm, gl.STATIC_DRAW);
+  GEO.idxBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, GEO.idxBuf); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, c.idx, gl.STATIC_DRAW);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE);
+  gl.cullFace(gl.BACK);
+  return true;
+}
+
+//////////////////// サウンド（WebAudio合成） ////////////////////
+const Snd = {
+  ctx: null, master: null, on: true, musicOn: true, noise: null,
+  init() {
+    if (this.ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { this.on = false; return; }
+    this.ctx = new AC();
+    const comp = this.ctx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 12; comp.attack.value = .003; comp.release.value = .18;
+    this.master = this.ctx.createGain();
+    this.master.gain.value = .5;
+    this.master.connect(comp); comp.connect(this.ctx.destination);
+    // ノイズバッファ
+    const n = this.ctx.sampleRate * 2;
+    const b = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    this.noise = b;
+  },
+  resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+  _noise(dur, vol, f0, f1, type) {
+    if (!this.on || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const src = this.ctx.createBufferSource(); src.buffer = this.noise; src.loop = true;
+    const flt = this.ctx.createBiquadFilter(); flt.type = type || 'lowpass';
+    flt.frequency.setValueAtTime(f0, t);
+    flt.frequency.exponentialRampToValueAtTime(Math.max(f1, 40), t + dur);
+    flt.Q.value = 1.1;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(.0008, t + dur);
+    src.connect(flt); flt.connect(g); g.connect(this.master);
+    src.start(t); src.stop(t + dur + .02);
+  },
+  _tone(f0, f1, dur, vol, type, dt) {
+    if (!this.on || !this.ctx) return;
+    const t = this.ctx.currentTime + (dt || 0);
+    const o = this.ctx.createOscillator(); o.type = type || 'sawtooth';
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(Math.max(f1, 20), t + dur);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + Math.min(.02, dur * .2));
+    g.gain.exponentialRampToValueAtTime(.0008, t + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + dur + .02);
+  },
+  hit(sz) { this._noise(.13, .28, 2600, 500); this._tone(160 / sz, 55 / sz, .12, .16, 'square'); },
+  crunch(v) { this._noise(.22, .22 * (v || 1), 1800, 220); },
+  boom(v) {
+    v = v === undefined ? 1 : v;
+    this._noise(.55, .45 * v, 900, 60);
+    this._tone(90, 26, .5, .3 * v, 'sine');
+  },
+  bigboom() { this._noise(1.1, .5, 700, 40); this._tone(70, 18, 1.0, .38, 'sine'); },
+  beam() { this._noise(.09, .13, 5000, 1600, 'bandpass'); },
+  roar(sz) {
+    if (!this.on || !this.ctx) return;
+    const base = clamp(180 / Math.max(sz, .2) ** .45, 40, 900);
+    this._tone(base * .8, base * .35, .85, .34, 'sawtooth');
+    this._tone(base * 1.21, base * .5, .8, .18, 'square');
+    this._noise(.9, .22, 1400, 200);
+  },
+  thud() { this._noise(.3, .3, 500, 60); this._tone(70, 30, .28, .25, 'sine'); },
+  place() { this._tone(520, 900, .1, .16, 'triangle'); this._tone(780, 1200, .09, .08, 'sine', .05); },
+  ui() { this._tone(700, 1000, .06, .1, 'square'); },
+  err() { this._tone(180, 110, .16, .16, 'square'); },
+  coin() { this._tone(880, 1320, .09, .12, 'square'); this._tone(1320, 1760, .1, .08, 'square', .07); },
+  cannon() { this._noise(.3, .26, 1500, 120); this._tone(120, 40, .25, .18, 'square'); },
+  // 簡易BGM（和太鼓っぽいループ）
+  music: { t: 0, step: 0 },
+  tickMusic(dt) {
+    if (!this.on || !this.musicOn || !this.ctx) return;
+    const m = this.music;
+    m.t -= dt;
+    if (m.t > 0) return;
+    m.t = .3;
+    const s = m.step++ % 16;
+    if (s % 4 === 0) this._noise(.16, .17, 380, 70);
+    if (s === 6 || s === 14) this._noise(.1, .11, 900, 200);
+    if (s % 8 === 2) this._tone(55, 52, .28, .1, 'sine');
+    if (s === 12) this._tone(110, 108, .3, .07, 'triangle');
+  }
+};
+//////////////////// マテリアル ////////////////////
+const MAT = {
+  wood: { hard: 1.0, yield: { wood: 1.0 }, col: 0xB08752 },
+  tile: { hard: 1.2, yield: { wood: .3, concrete: .4 }, col: 0x4A5560 },
+  concrete: { hard: 3.0, yield: { concrete: 1.0 }, col: 0xBFBAB0 },
+  steel: { hard: 4.2, yield: { steel: 1.0, concrete: .2 }, col: 0x8C949E },
+  glass: { hard: .5, yield: { neon: .2 }, col: 0x7FB3C8 },
+  neon: { hard: .5, yield: { neon: 1.4 }, col: 0xFF3B6E },
+  asphalt: { hard: 2.0, yield: { concrete: .5 }, col: 0x35353B },
+  earth: { hard: 99999, yield: {}, col: 0x4E7A3A },
+  car: { hard: .9, yield: { steel: 1.4, neon: .1 }, col: 0xD03A3A },
+  plant: { hard: .5, yield: { wood: .8 }, col: 0x2F6B33 },
+};
+const RES_KEYS = ['wood', 'concrete', 'steel', 'neon'];
+const RES_INFO = {
+  wood: { n: '木材', i: '🪵' },
+  concrete: { n: 'コンクリ', i: '🧱' },
+  steel: { n: '鉄骨', i: '⚙️' },
+  neon: { n: 'ネオン', i: '💡' },
+};
+
+//////////////////// ワールド ////////////////////
+const World = {
+  parts: [], structs: [], grid: new Map(), cell: 26,
+  size: 1000, night: 0, stage: null, freeSlots: [],
+  reset() {
+    this.parts.length = 0; this.structs.length = 0;
+    this.grid.clear(); this.freeSlots.length = 0;
+  },
+  key(ix, iz) { return ix * 8192 + iz; },
+  insert(i) {
+    const p = this.parts[i], c = this.cell;
+    const r = Math.max(p.hx, p.hz) * 1.45;
+    const x0 = Math.floor((p.x - r) / c), x1 = Math.floor((p.x + r) / c);
+    const z0 = Math.floor((p.z - r) / c), z1 = Math.floor((p.z + r) / c);
+    for (let ix = x0; ix <= x1; ix++) for (let iz = z0; iz <= z1; iz++) {
+      const k = this.key(ix, iz);
+      let a = this.grid.get(k); if (!a) { a = []; this.grid.set(k, a); }
+      a.push(i);
+    }
+  },
+  add(o) {
+    const mat = MAT[o.mat] || MAT.concrete;
+    const vol = 8 * o.hx * o.hy * o.hz;
+    const p = {
+      x: o.x, y: o.y, z: o.z, hx: o.hx, hy: o.hy, hz: o.hz,
+      q: o.q || null, rot: o.rot || 0,
+      r: o.r, g: o.g, b: o.b, style: o.style || 0,
+      mat: o.mat || 'concrete',
+      hp: o.invul ? Infinity : Math.max(6, vol * mat.hard * 1.1),
+      vol, st: o.st === undefined ? -1 : o.st, dead: false,
+      invul: !!o.invul, noDebris: !!o.noDebris
+    };
+    p.mx = p.hp;
+    let i;
+    if (this.freeSlots.length) { i = this.freeSlots.pop(); this.parts[i] = p; }
+    else { i = this.parts.length; this.parts.push(p); }
+    if (!o.invul) this.insert(i);
+    if (p.st >= 0) { const s = this.structs[p.st]; s.parts.push(i); s.total++; }
+    return i;
+  },
+  newStruct(type, opt) {
+    const s = Object.assign({
+      type, parts: [], total: 0, dead: 0, collapsed: false,
+      built: false, pop: 0, prod: null, name: type, cx: 0, cz: 0, h: 0
+    }, opt || {});
+    this.structs.push(s);
+    return this.structs.length - 1;
+  },
+  removePart(i) {
+    const p = this.parts[i];
+    if (!p || p.dead) return;
+    p.dead = true;
+    if (p.st >= 0) {
+      const s = this.structs[p.st];
+      s.dead++;
+    }
+  },
+  // 球状ダメージ
+  damage(cx, cy, cz, rad, dmg, opts) {
+    opts = opts || {};
+    const c = this.cell, hits = [];
+    const x0 = Math.floor((cx - rad) / c), x1 = Math.floor((cx + rad) / c);
+    const z0 = Math.floor((cz - rad) / c), z1 = Math.floor((cz + rad) / c);
+    const seen = TMP_SEEN; seen.clear();
+    let total = 0;
+    for (let ix = x0; ix <= x1; ix++) for (let iz = z0; iz <= z1; iz++) {
+      const a = this.grid.get(this.key(ix, iz));
+      if (!a) continue;
+      for (let n = 0; n < a.length; n++) {
+        const i = a[n];
+        if (seen.has(i)) continue; seen.add(i);
+        const p = this.parts[i];
+        if (!p || p.dead || p.invul) continue;
+        const dx = Math.max(Math.abs(cx - p.x) - p.hx, 0);
+        const dy = Math.max(Math.abs(cy - p.y) - p.hy, 0);
+        const dz = Math.max(Math.abs(cz - p.z) - p.hz, 0);
+        const d = Math.hypot(dx, dy, dz);
+        if (d > rad) continue;
+        const fall = 1 - (d / rad) * .55;
+        p.hp -= dmg * fall;
+        total += dmg * fall;
+        if (p.hp <= 0) { hits.push(i); }
+        else if (!opts.silent) { Fx.spark(p.x + rnd(-p.hx, p.hx), p.y + rnd(-p.hy, p.hy), p.z + rnd(-p.hz, p.hz), 2, p); }
+      }
+    }
+    for (const i of hits) this.destroyPart(i, cx, cy, cz, opts);
+    if (hits.length) { staticDirty = true; }
+    return hits.length;
+  },
+  destroyPart(i, cx, cy, cz, opts) {
+    const p = this.parts[i];
+    if (!p || p.dead) return;
+    this.removePart(i);
+    if (!p.noDebris) Debris.shatter(p, cx, cy, cz);
+    const mat = MAT[p.mat] || MAT.concrete;
+    const gain = p.vol * .045;
+    for (const k in mat.yield) {
+      if (Game.res[k] !== undefined) Game.res[k] += gain * mat.yield[k];
+    }
+    Game.onDestroy(p, opts);
+    const s = p.st >= 0 ? this.structs[p.st] : null;
+    if (s && !s.collapsed && s.total > 3 && s.dead / s.total > .42) this.collapse(p.st);
+  },
+  collapse(si) {
+    const s = this.structs[si];
+    if (!s || s.collapsed) return;
+    s.collapsed = true;
+    let n = 0;
+    for (const i of s.parts) {
+      const p = this.parts[i];
+      if (!p || p.dead) continue;
+      this.removePart(i);
+      if (!p.noDebris) Debris.shatter(p, p.x, p.y - p.hy * 2, p.z, true);
+      const mat = MAT[p.mat] || MAT.concrete;
+      const gain = p.vol * .045;
+      for (const k in mat.yield) if (Game.res[k] !== undefined) Game.res[k] += gain * mat.yield[k];
+      Game.onDestroy(p, { collapse: true });
+      n++;
+    }
+    if (s.built) { Game.pop = Math.max(0, Game.pop - s.pop); }
+    staticDirty = true;
+    if (n > 2) {
+      Snd.bigboom();
+      Game.shake += clamp(n * .5, 1, 9);
+      Game.toast('💥 ' + (s.name || '建物') + ' 倒壊！ +' + Math.round(n * 40) + 'pt');
+      Game.score += n * 40;
+      Fx.smokeBurst(s.cx, 2, s.cz, Math.min(n, 24), 6 + n * .4);
+    }
+  },
+  // 地面より上にある部位に当たるか（プレイヤー衝突用）
+  hitBox(cx, cy, cz, rad) {
+    const c = this.cell;
+    const x0 = Math.floor((cx - rad) / c), x1 = Math.floor((cx + rad) / c);
+    const z0 = Math.floor((cz - rad) / c), z1 = Math.floor((cz + rad) / c);
+    for (let ix = x0; ix <= x1; ix++) for (let iz = z0; iz <= z1; iz++) {
+      const a = this.grid.get(this.key(ix, iz));
+      if (!a) continue;
+      for (let n = 0; n < a.length; n++) {
+        const p = this.parts[a[n]];
+        if (!p || p.dead) continue;
+        const dx = Math.max(Math.abs(cx - p.x) - p.hx, 0);
+        const dy = Math.max(Math.abs(cy - p.y) - p.hy, 0);
+        const dz = Math.max(Math.abs(cz - p.z) - p.hz, 0);
+        if (dx * dx + dy * dy + dz * dz < rad * rad) return p;
+      }
+    }
+    return null;
+  },
+  // 指定XZ範囲が空いているか（建設用）
+  free(cx, cz, hx, hz) {
+    const c = this.cell, rad = Math.max(hx, hz);
+    const x0 = Math.floor((cx - rad) / c), x1 = Math.floor((cx + rad) / c);
+    const z0 = Math.floor((cz - rad) / c), z1 = Math.floor((cz + rad) / c);
+    for (let ix = x0; ix <= x1; ix++) for (let iz = z0; iz <= z1; iz++) {
+      const a = this.grid.get(this.key(ix, iz));
+      if (!a) continue;
+      for (let n = 0; n < a.length; n++) {
+        const p = this.parts[a[n]];
+        if (!p || p.dead || p.y + p.hy < .6) continue;
+        if (Math.abs(p.x - cx) < p.hx + hx - .5 && Math.abs(p.z - cz) < p.hz + hz - .5) return false;
+      }
+    }
+    return true;
+  },
+  // レイと部位の交差（熱線用）
+  ray(ox, oy, oz, dx, dy, dz, maxT) {
+    let best = -1, bestT = maxT;
+    const step = this.cell * .8;
+    const seen = TMP_SEEN2; seen.clear();
+    for (let t = 0; t < maxT; t += step) {
+      const px = ox + dx * t, pz = oz + dz * t;
+      const ix = Math.floor(px / this.cell), iz = Math.floor(pz / this.cell);
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) {
+        const arr = this.grid.get(this.key(ix + a, iz + b));
+        if (!arr) continue;
+        for (let n = 0; n < arr.length; n++) {
+          const i = arr[n];
+          if (seen.has(i)) continue; seen.add(i);
+          const p = this.parts[i];
+          if (!p || p.dead) continue;
+          const tt = rayBox(ox, oy, oz, dx, dy, dz, p);
+          if (tt >= 0 && tt < bestT) { bestT = tt; best = i; }
+        }
+      }
+      if (best >= 0 && bestT < t + step) break;
+    }
+    return { i: best, t: bestT };
+  }
+};
+const TMP_SEEN = new Set();
+const TMP_SEEN2 = new Set();
+let staticDirty = true;
+
+function rayBox(ox, oy, oz, dx, dy, dz, p) {
+  let t0 = 0, t1 = 1e9;
+  const lo = [p.x - p.hx, p.y - p.hy, p.z - p.hz];
+  const hi = [p.x + p.hx, p.y + p.hy, p.z + p.hz];
+  const o = [ox, oy, oz], d = [dx, dy, dz];
+  for (let i = 0; i < 3; i++) {
+    if (Math.abs(d[i]) < 1e-8) { if (o[i] < lo[i] || o[i] > hi[i]) return -1; continue; }
+    let a = (lo[i] - o[i]) / d[i], b = (hi[i] - o[i]) / d[i];
+    if (a > b) { const tmp = a; a = b; b = tmp; }
+    if (a > t0) t0 = a; if (b < t1) t1 = b;
+    if (t0 > t1) return -1;
+  }
+  return t0;
+}
+
+//////////////////// 建物パーツ生成ヘルパ ////////////////////
+const _tq = new Float32Array(4), _tq2 = new Float32Array(4), _tq3 = new Float32Array(4);
+function quatYawRoll(yaw, roll) {
+  qFromAxis(_tq, 0, 1, 0, yaw);
+  qFromAxis(_tq2, 0, 0, 1, roll);
+  qMul(_tq3, _tq, _tq2);
+  return new Float32Array(_tq3);
+}
+
+// ビル（窓つき・複数フロア）
+function makeTower(x, z, w, d, floors, fh, base, rng, opt) {
+  opt = opt || {};
+  const si = World.newStruct('ビル', { cx: x, cz: z, name: opt.name || 'ビル', h: floors * fh });
+  const s = World.structs[si];
+  const c = shade(base, .92 + rng() * .3);
+  let y = 0;
+  for (let f = 0; f < floors; f++) {
+    let ww = w, dd = d;
+    if (opt.taper) { const k = 1 - (f / floors) * opt.taper; ww = w * k; dd = d * k; }
+    const cc = shade(c, .93 + ((f % 3) * .035));
+    World.add({
+      x, y: y + fh / 2, z, hx: ww / 2, hy: fh / 2, hz: dd / 2,
+      r: cc[0], g: cc[1], b: cc[2], style: 1, mat: f < 2 ? 'concrete' : 'steel', st: si
+    });
+    y += fh;
+  }
+  // 屋上
+  const rc = shade(c, .74);
+  World.add({ x, y: y + .6, z, hx: w / 2 * .52, hy: .6, hz: d / 2 * .52, r: rc[0], g: rc[1], b: rc[2], mat: 'concrete', st: si });
+  if (rng() < .5) {
+    const hx = w * .12;
+    World.add({ x: x + rnd(-w * .2, w * .2), y: y + 2.6, z: z + rnd(-d * .2, d * .2), hx, hy: 2, hz: hx, r: .45, g: .47, b: .5, mat: 'steel', st: si });
+  }
+  if (rng() < .35) { // 屋上ネオン看板
+    const nc = pick([[1, .23, .43], [.2, .95, 1], [1, .82, .2], [.5, 1, .4]]);
+    World.add({ x, y: y + 3.6, z, hx: w * .38, hy: 1.5, hz: .35, r: nc[0], g: nc[1], b: nc[2], style: 2, mat: 'neon', st: si });
+  }
+  s.pop = Math.round(floors * w * d * .05);
+  return si;
+}
+
+// 民家（瓦屋根つき）
+function makeHouse(x, z, w, d, rot, rng, opt) {
+  opt = opt || {};
+  const si = World.newStruct('民家', { cx: x, cz: z, name: opt.name || '民家', h: 6 });
+  const wallC = pick([[.90, .87, .80], [.83, .80, .72], [.72, .68, .62], [.88, .84, .70], [.62, .60, .58]]);
+  const wc = jitter(wallC, .06);
+  const h = opt.h || rnd(3.2, 4.2);
+  const floors = opt.floors || (rng() < .45 ? 2 : 1);
+  const H = h * floors;
+  World.add({
+    x, y: H / 2, z, hx: w / 2, hy: H / 2, hz: d / 2, rot,
+    q: rot ? new Float32Array(qYaw(rot)) : null,
+    r: wc[0], g: wc[1], b: wc[2], style: 0, mat: 'wood', st: si
+  });
+  // 腰壁
+  const bc = shade(wc, .72);
+  World.add({
+    x, y: .55, z, hx: w / 2 * 1.02, hy: .55, hz: d / 2 * 1.02, rot,
+    q: rot ? new Float32Array(qYaw(rot)) : null,
+    r: bc[0], g: bc[1], b: bc[2], mat: 'concrete', st: si
+  });
+  // 瓦屋根（切妻）
+  const rc = pick([[.30, .34, .38], [.24, .26, .30], [.36, .30, .26], [.28, .36, .34]]);
+  const slope = .58, rl = (d / 2) / Math.cos(slope);
+  const ex = w / 2 + .5;
+  for (const s2 of [1, -1]) {
+    const q = quatYawRoll(rot, 0);
+    // ロール軸を屋根方向へ: yaw後にX軸まわりで傾ける
+    qFromAxis(_tq, 0, 1, 0, rot);
+    qFromAxis(_tq2, 1, 0, 0, slope * s2);
+    qMul(_tq3, _tq, _tq2);
+    const qq = new Float32Array(_tq3);
+    const off = (d / 4) * s2;
+    const ox = Math.cos(rot) * 0 + Math.sin(rot) * off;
+    const oz = Math.cos(rot) * off;
+    World.add({
+      x: x + ox, y: H + Math.tan(slope) * (d / 4) * .5 + .1, z: z + oz,
+      hx: ex, hy: .22, hz: rl / 2 + .35, q: qq,
+      r: rc[0], g: rc[1], b: rc[2], style: 3, mat: 'tile', st: si
+    });
+  }
+  World.structs[si].pop = 3 * floors;
+  return si;
+}
+
+// 小物
+function addProp(kind, x, z, rot, rng) {
+  const R = rng || Math.random;
+  if (kind === 'pole') { // 電柱
+    const si = World.newStruct('電柱', { cx: x, cz: z, name: '電柱' });
+    World.add({ x, y: 4.2, z, hx: .16, hy: 4.2, hz: .16, r: .55, g: .53, b: .50, mat: 'concrete', st: si });
+    World.add({ x, y: 7.9, z, hx: 1.5, hy: .09, hz: .09, rot, q: new Float32Array(qYaw(rot)), r: .42, g: .40, b: .38, mat: 'wood', st: si });
+    World.add({ x, y: 7.1, z, hx: 1.1, hy: .08, hz: .08, rot, q: new Float32Array(qYaw(rot)), r: .42, g: .40, b: .38, mat: 'wood', st: si });
+    return si;
+  }
+  if (kind === 'vend') { // 自販機
+    const si = World.newStruct('自販機', { cx: x, cz: z, name: '自販機' });
+    const c = pick([[.92, .18, .18], [.15, .5, .9], [.95, .75, .1], [.2, .7, .35]]);
+    World.add({ x, y: .95, z, hx: .55, hy: .95, hz: .38, rot, q: new Float32Array(qYaw(rot)), r: c[0], g: c[1], b: c[2], style: 2, mat: 'neon', st: si });
+    return si;
+  }
+  if (kind === 'tree') {
+    const si = World.newStruct('木', { cx: x, cz: z, name: '木' });
+    const h = R() * 3 + 3;
+    World.add({ x, y: h * .35, z, hx: .22, hy: h * .35, hz: .22, r: .32, g: .24, b: .16, mat: 'wood', st: si });
+    const g = [.13 + R() * .1, .38 + R() * .18, .16 + R() * .08];
+    World.add({ x, y: h * .8, z, hx: 1.5 + R(), hy: 1.4 + R() * .8, hz: 1.5 + R(), rot: R() * PI, q: new Float32Array(qYaw(R() * PI)), r: g[0], g: g[1], b: g[2], mat: 'plant', st: si });
+    return si;
+  }
+  if (kind === 'car') {
+    const si = World.newStruct('車', { cx: x, cz: z, name: '車' });
+    const c = pick([[.85, .85, .88], [.12, .12, .14], [.75, .18, .18], [.2, .35, .7], [.6, .62, .66], [.95, .8, .2]]);
+    const q = new Float32Array(qYaw(rot));
+    const long = R() < .18 ? 4.6 : 2.2;
+    World.add({ x, y: .75, z, hx: long, hy: .55, hz: .9, q, r: c[0], g: c[1], b: c[2], mat: 'car', st: si });
+    World.add({ x, y: 1.7, z, hx: long * .5, hy: .45, hz: .82, q, r: c[0] * .6 + .2, g: c[1] * .6 + .25, b: c[2] * .6 + .3, mat: 'glass', st: si });
+    return si;
+  }
+  if (kind === 'sign') { // ロードサイド看板
+    const si = World.newStruct('看板', { cx: x, cz: z, name: '看板' });
+    const h = 6 + R() * 8;
+    World.add({ x, y: h / 2, z, hx: .3, hy: h / 2, hz: .3, r: .5, g: .5, b: .52, mat: 'steel', st: si });
+    const c = pick([[1, .25, .3], [1, .8, .15], [.2, .8, 1], [.3, 1, .45], [1, .45, .1]]);
+    World.add({ x, y: h + 1.6, z, hx: 2.6, hy: 1.6, hz: .28, rot, q: new Float32Array(qYaw(rot)), r: c[0], g: c[1], b: c[2], style: 2, mat: 'neon', st: si });
+    return si;
+  }
+  if (kind === 'pylon') { // 送電鉄塔
+    const si = World.newStruct('鉄塔', { cx: x, cz: z, name: '送電鉄塔', h: 40 });
+    const c = [.55, .57, .60];
+    for (let i = 0; i < 5; i++) {
+      const y = 4 + i * 8, sp = 3.4 * (1 - i * .13);
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        World.add({ x: x + sx * sp, y, z: z + sz * sp, hx: .28, hy: 4, hz: .28, r: c[0], g: c[1], b: c[2], mat: 'steel', st: si });
+      }
+      if (i > 1) World.add({ x, y: y + 4, z, hx: 7 - i, hy: .25, hz: .25, rot, q: new Float32Array(qYaw(rot)), r: c[0], g: c[1], b: c[2], mat: 'steel', st: si });
+    }
+    return si;
+  }
+  if (kind === 'shop') { // ロードサイド店
+    const si = World.newStruct('店', { cx: x, cz: z, name: 'ロードサイド店' });
+    const w = 8 + R() * 8, d = 7 + R() * 6, h = 4 + R() * 2;
+    const c = pick([[.93, .91, .86], [.85, .88, .92], [.95, .85, .70]]);
+    World.add({ x, y: h / 2, z, hx: w / 2, hy: h / 2, hz: d / 2, rot, q: new Float32Array(qYaw(rot)), r: c[0], g: c[1], b: c[2], style: 1, mat: 'concrete', st: si });
+    const nc = pick([[1, .3, .25], [.2, .9, .5], [1, .75, .15], [.25, .6, 1]]);
+    World.add({ x: x + Math.sin(rot) * (d / 2 + .3), y: h + .8, z: z + Math.cos(rot) * (d / 2 + .3), hx: w * .42, hy: .8, hz: .3, rot, q: new Float32Array(qYaw(rot)), r: nc[0], g: nc[1], b: nc[2], style: 2, mat: 'neon', st: si });
+    World.structs[si].pop = 6;
+    return si;
+  }
+  return -1;
+}
+
+//////////////////// ステージ生成 ////////////////////
+const STAGES = {
+  rural: {
+    name: '地方都市 みずなみ', icon: '🏯',
+    desc: '駅前商店街、瓦屋根の民家、田んぼ、送電線、国道沿いのロードサイド店。日本の原風景を粉々に。',
+    sky: 0x2A1B2E, fogTop: 0xE9A574, night: .25, size: 900,
+    sun: [.35, .55, .32], sunCol: 0xFFD9A8, amb: 0x5C5568, fogD: 0.00052,
+    gen: genRural
+  },
+  city: {
+    name: '大都会 メガロポリス', icon: '🌃',
+    desc: '高層ビル群、高速道路、走る電車、赤白の電波塔。ネオンの海をなぎ倒せ。',
+    sky: 0x14182E, fogTop: 0x232B4C, night: 1, size: 1000,
+    sun: [.3, .45, -.5], sunCol: 0x5A6699, amb: 0x3A4166, fogD: 0.00058,
+    gen: genCity
+  }
+};
+
+function addGround(size, col, style) {
+  World.add({ x: 0, y: -2, z: 0, hx: size, hy: 2, hz: size, r: col[0], g: col[1], b: col[2], style: style, mat: 'earth', invul: true });
+}
+function addRoad(x, z, hx, hz, rot) {
+  const c = [.20, .20, .22];
+  World.add({
+    x, y: .04, z, hx, hy: .06, hz, rot, q: rot ? new Float32Array(qYaw(rot)) : null,
+    r: c[0], g: c[1], b: c[2], style: 4, mat: 'asphalt', invul: true
+  });
+}
+
+function genRural(rng) {
+  const S = 900;
+  addGround(S, [.30, .42, .22], 5);
+  // 山（遠景・段々のピラミッド状）
+  function mountain(x, z, h, w, tint) {
+    const L = 7;
+    for (let k = 0; k < L; k++) {
+      const t = k / L;
+      const kk = Math.pow(1 - t, .78);
+      const g = .18 + t * .12;
+      World.add({
+        x: x + (rng() - .5) * w * .12, y: h * t * .95 + h * .06,
+        z: z + (rng() - .5) * w * .12,
+        hx: w * kk, hy: h * .085, hz: w * kk,
+        rot: rng() * PI,
+        q: new Float32Array(qYaw(rng() * PI)),
+        r: (.11 + t * .05) * tint, g: (g + rng() * .03) * tint, b: (.11 + t * .04) * tint,
+        style: 5, mat: 'earth', invul: true
+      });
+    }
+  }
+  for (let i = 0; i < 30; i++) {
+    const a = i / 30 * TAU + rng() * .12, r = 640 + rng() * 260;
+    mountain(Math.cos(a) * r, Math.sin(a) * r, 90 + rng() * 150, 95 + rng() * 90, .85 + rng() * .3);
+  }
+  for (let i = 0; i < 16; i++) { // 手前の低い丘
+    const a = rng() * TAU, r = 480 + rng() * 130;
+    mountain(Math.cos(a) * r, Math.sin(a) * r, 34 + rng() * 40, 60 + rng() * 45, 1.05);
+  }
+  // 川
+  World.add({ x: 300, y: -.4, z: 0, hx: 26, hy: 1.2, hz: S, r: .14, g: .30, b: .42, style: 6, mat: 'earth', invul: true });
+  // 橋
+  for (const bz of [-160, 40, 220]) {
+    const si = World.newStruct('橋', { cx: 300, cz: bz, name: '橋' });
+    World.add({ x: 300, y: 4, z: bz, hx: 32, hy: .8, hz: 7, r: .55, g: .54, b: .52, mat: 'concrete', st: si });
+    for (const px of [278, 300, 322]) World.add({ x: px, y: 2, z: bz, hx: 1.6, hy: 2, hz: 6, r: .5, g: .49, b: .47, mat: 'concrete', st: si });
+  }
+  // 道路グリッド
+  const roadsZ = [-320, -180, -60, 60, 180, 320];
+  const roadsX = [-300, -160, -40, 80, 200];
+  for (const z of roadsZ) addRoad(0, z, 420, z === 60 ? 11 : 6, 0);
+  for (const x of roadsX) addRoad(x, 0, x === -40 ? 10 : 5.5, 420, 0);
+  // 国道（南北の太い道）
+  addRoad(-40, 0, 13, 480, 0);
+
+  // 線路＋駅
+  const trackZ = -240;
+  World.add({ x: 0, y: .5, z: trackZ, hx: 500, hy: .5, hz: 5, r: .30, g: .27, b: .24, mat: 'earth', invul: true });
+  for (const o of [-2, 2]) World.add({ x: 0, y: 1.15, z: trackZ + o, hx: 500, hy: .16, hz: .22, r: .42, g: .40, b: .38, mat: 'steel', invul: true });
+  const stSi = World.newStruct('駅', { cx: -40, cz: trackZ, name: '駅舎', h: 12 });
+  World.add({ x: -40, y: 5, z: trackZ - 20, hx: 26, hy: 5, hz: 11, r: .86, g: .84, b: .78, style: 1, mat: 'concrete', st: stSi });
+  World.add({ x: -40, y: 11, z: trackZ - 20, hx: 27, hy: 1, hz: 12, r: .35, g: .38, b: .42, mat: 'steel', st: stSi });
+  World.add({ x: -40, y: 1.4, z: trackZ, hx: 40, hy: 1.4, hz: 4.2, r: .72, g: .70, b: .66, mat: 'concrete', st: stSi });
+  for (let i = -3; i <= 3; i++) World.add({ x: -40 + i * 11, y: 4.6, z: trackZ, hx: .18, hy: 1.8, hz: .18, r: .5, g: .5, b: .5, mat: 'steel', st: stSi });
+  World.add({ x: -40, y: 6.7, z: trackZ, hx: 40, hy: .3, hz: 5.5, r: .40, g: .43, b: .47, mat: 'steel', st: stSi });
+  World.structs[stSi].pop = 40;
+  // 停車中の電車
+  const trSi = World.newStruct('電車', { cx: 30, cz: trackZ, name: '電車' });
+  for (let i = 0; i < 4; i++) {
+    const cx = 30 + i * 21;
+    World.add({ x: cx, y: 3, z: trackZ, hx: 10, hy: 1.7, hz: 1.6, r: .88, g: .89, b: .92, style: 1, mat: 'steel', st: trSi });
+    World.add({ x: cx, y: 2.3, z: trackZ, hx: 10, hy: .35, hz: 1.7, r: .1, g: .45, b: .75, style: 2, mat: 'neon', st: trSi });
+  }
+
+  // 商店街（アーケード）
+  const arcZ = -180;
+  for (let i = -9; i <= 9; i++) {
+    if (Math.abs(i) < 1) continue;
+    for (const side of [-1, 1]) {
+      const x = i * 13 - 40, z = arcZ + side * 12;
+      const si = World.newStruct('商店', { cx: x, cz: z, name: '商店' });
+      const h = rnd(5, 8);
+      const c = jitter(pick([[.90, .86, .78], [.80, .78, .74], [.86, .74, .62], [.72, .76, .78]]), .06);
+      World.add({ x, y: h / 2, z, hx: 5.8, hy: h / 2, hz: 5.5, r: c[0], g: c[1], b: c[2], style: 1, mat: 'concrete', st: si });
+      // 看板（縦）
+      const nc = pick([[1, .28, .28], [.2, .85, 1], [1, .8, .2], [.4, 1, .5], [1, .5, .9]]);
+      World.add({ x: x + 4.4, y: h * .6, z: z - side * 5.9, hx: .8, hy: h * .38, hz: .22, r: nc[0], g: nc[1], b: nc[2], style: 2, mat: 'neon', st: si });
+      // アーケード屋根
+      World.add({ x, y: 4.4, z: z - side * 8.5, hx: 6, hy: .2, hz: 3.2, r: .38, g: .40, b: .44, mat: 'steel', st: si });
+      World.structs[si].pop = 8;
+    }
+  }
+  // 民家エリア
+  const houseZones = [
+    { x0: -300, x1: -70, z0: -140, z1: 140, dens: .72 },
+    { x0: 40, x1: 250, z0: -140, z1: 140, dens: .66 },
+    { x0: -300, x1: 200, z0: 200, z1: 380, dens: .55 },
+  ];
+  for (const zn of houseZones) {
+    for (let x = zn.x0; x < zn.x1; x += 18) {
+      for (let z = zn.z0; z < zn.z1; z += 18) {
+        if (rng() > zn.dens) continue;
+        if (roadsZ.some(rz => Math.abs(z - rz) < 12)) continue;
+        if (roadsX.some(rx => Math.abs(x - rx) < 12)) continue;
+        const rot = (rng() < .5 ? 0 : PI / 2) + rnd(-.05, .05);
+        makeHouse(x + rnd(-3, 3), z + rnd(-3, 3), rnd(7, 11), rnd(7, 10), rot, rng);
+        if (rng() < .3) addProp('tree', x + rnd(-7, 7), z + rnd(-7, 7), 0, rng);
+        if (rng() < .25) addProp('car', x + rnd(-6, 6), z + rnd(-6, 6), rng() < .5 ? 0 : PI / 2, rng);
+      }
+    }
+  }
+  // 田んぼ
+  for (let x = -420; x < -300; x += 34) {
+    for (let z = -400; z < 400; z += 34) {
+      const c = rng() < .5 ? [.42, .55, .20] : [.30, .45, .28];
+      World.add({ x, y: .1, z, hx: 15, hy: .12, hz: 15, r: c[0], g: c[1], b: c[2], style: 5, mat: 'earth', invul: true });
+      World.add({ x, y: .2, z: z + 16, hx: 16, hy: .22, hz: .8, r: .35, g: .32, b: .24, mat: 'earth', invul: true });
+    }
+  }
+  // ロードサイド（国道沿い）
+  for (let z = -380; z < 400; z += 44) {
+    for (const side of [-1, 1]) {
+      if (rng() < .55) addProp('shop', -40 + side * 30 + rnd(-4, 4), z, side > 0 ? PI : 0, rng);
+      if (rng() < .6) addProp('sign', -40 + side * 17, z + rnd(-10, 10), 0, rng);
+    }
+  }
+  // 電柱・木・車
+  for (const z of roadsZ) for (let x = -400; x < 400; x += 26) if (rng() < .55) addProp('pole', x, z + 8.5, rng() < .5 ? 0 : PI / 2, rng);
+  for (const x of roadsX) for (let z = -400; z < 400; z += 26) if (rng() < .5) addProp('pole', x + 8, z, PI / 2, rng);
+  for (let i = 0; i < 90; i++) {
+    const z = pick(roadsZ) + rnd(-4, 4);
+    addProp('car', rnd(-400, 400), z, 0, rng);
+  }
+  for (let i = 0; i < 60; i++) addProp('car', pick(roadsX) + rnd(-4, 4), rnd(-400, 400), PI / 2, rng);
+  for (let i = 0; i < 40; i++) addProp('vend', rnd(-380, 380), rnd(-380, 380), rng() * TAU, rng);
+  for (let i = 0; i < 160; i++) addProp('tree', rnd(-450, 450), rnd(-450, 450), 0, rng);
+  // 送電線
+  for (let i = 0; i < 7; i++) addProp('pylon', -480 + i * 6, -420 + i * 130, PI / 2, rng);
+  // 小さな工場・アパート
+  for (let i = 0; i < 22; i++) {
+    const x = rnd(-380, 280), z = rnd(-380, 380);
+    makeTower(x, z, rnd(14, 22), rnd(12, 18), rndi(2, 4), 3.4, pick([[.78, .76, .70], [.70, .74, .78], [.82, .78, .68]]), rng, { name: 'アパート' });
+  }
+  return { spawn: [-40, 0, 80] };
+}
+
+const TOWER_X = 279, TOWER_Z = -279;
+function genCity(rng) {
+  const S = 1000;
+  addGround(S, [.14, .14, .16], 0);
+  const block = 62, road = 15;
+  const N = 8;
+  // 道路
+  for (let i = -N; i <= N; i++) {
+    addRoad(i * block, 0, road / 2, S, 0);
+    addRoad(0, i * block, S, road / 2, 0);
+  }
+  // ビル
+  for (let ix = -N; ix < N; ix++) {
+    for (let iz = -N; iz < N; iz++) {
+      const cx = ix * block + block / 2, cz = iz * block + block / 2;
+      const distC = Math.hypot(cx, cz);
+      if (distC < 62) continue;
+      if (Math.hypot(cx - TOWER_X, cz - TOWER_Z) < 62) continue;
+      const dense = clamp(1 - distC / 620, .12, 1);
+      const nsub = rng() < .45 ? 2 : 1;
+      for (let s = 0; s < nsub; s++) {
+        const w = nsub === 2 ? rnd(16, 22) : rnd(26, 40);
+        const d = nsub === 2 ? rnd(16, 22) : rnd(26, 40);
+        const ox = nsub === 2 ? (s === 0 ? -12 : 12) : 0;
+        const oz = nsub === 2 ? rnd(-8, 8) : 0;
+        let floors = Math.round(lerp(3, 40, Math.pow(rng(), 1.7) * dense + rng() * .15));
+        floors = clamp(floors, 3, 46);
+        const base = pick([[.42, .44, .50], [.35, .37, .42], [.50, .48, .46], [.30, .34, .40], [.46, .43, .40], [.26, .30, .36]]);
+        makeTower(cx + ox, cz + oz, w, d, floors, 3.6, base, rng, { taper: floors > 26 ? .28 : 0 });
+      }
+      if (rng() < .5) addProp('tree', cx + rnd(-24, 24), cz + rnd(-24, 24), 0, rng);
+    }
+  }
+  // 電波塔
+  {
+    const si = World.newStruct('電波塔', { cx: TOWER_X, cz: TOWER_Z, name: '電波塔', h: 300 });
+    for (let i = 0; i < 12; i++) {
+      const y = i * 20 + 10, k = 1 - i / 14;
+      const c = i % 2 ? [.92, .92, .95] : [.90, .22, .16];
+      const sp = 13 * k;
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        World.add({ x: TOWER_X + sx * sp, y, z: TOWER_Z + sz * sp, hx: 1.1 * k + .3, hy: 10, hz: 1.1 * k + .3, r: c[0], g: c[1], b: c[2], mat: 'steel', st: si });
+      }
+      World.add({ x: TOWER_X, y: y + 10, z: TOWER_Z, hx: sp + 1, hy: .5, hz: sp + 1, r: c[0] * .8, g: c[1] * .8, b: c[2] * .8, mat: 'steel', st: si });
+    }
+    World.add({ x: TOWER_X, y: 258, z: TOWER_Z, hx: 1.2, hy: 30, hz: 1.2, r: .9, g: .9, b: .92, mat: 'steel', st: si });
+    World.add({ x: TOWER_X, y: 290, z: TOWER_Z, hx: 1.6, hy: 1.6, hz: 1.6, r: 1, g: .2, b: .15, style: 2, mat: 'neon', st: si });
+    World.structs[si].pop = 30;
+  }
+  // 高速道路（高架・環状）
+  {
+    const si = World.newStruct('高速道路', { cx: 0, cz: 0, name: '高速道路' });
+    const R = 250;
+    for (let i = 0; i < 72; i++) {
+      const a = i / 72 * TAU, a2 = (i + 1) / 72 * TAU;
+      const x = Math.cos(a) * R, z = Math.sin(a) * R;
+      const len = Math.hypot(Math.cos(a2) * R - x, Math.sin(a2) * R - z) / 2 + .6;
+      const rot = -a + PI / 2;
+      World.add({ x, y: 22, z, hx: len, hy: .7, hz: 7, rot, q: new Float32Array(qYaw(rot)), r: .40, g: .40, b: .43, style: 4, mat: 'concrete', st: si });
+      if (i % 4 === 0) World.add({ x, y: 11, z, hx: 2, hy: 11, hz: 2, r: .45, g: .45, b: .48, mat: 'concrete', st: si });
+      if (i % 6 === 0) addProp('car', x, z, rot, rng);
+    }
+  }
+  // 高架鉄道（東西）
+  {
+    const si = World.newStruct('高架鉄道', { cx: 0, cz: 430, name: '高架鉄道' });
+    for (let x = -480; x <= 480; x += 24) {
+      World.add({ x, y: 14, z: 430, hx: 12.5, hy: .8, hz: 5, r: .42, g: .42, b: .45, mat: 'concrete', st: si });
+      World.add({ x, y: 7, z: 430, hx: 1.8, hy: 7, hz: 1.8, r: .45, g: .45, b: .48, mat: 'concrete', st: si });
+    }
+    for (let i = 0; i < 6; i++) {
+      const cx = -120 + i * 22;
+      World.add({ x: cx, y: 17.4, z: 430, hx: 10, hy: 1.8, hz: 1.7, r: .9, g: .9, b: .93, style: 1, mat: 'steel', st: si });
+      World.add({ x: cx, y: 16.4, z: 430, hx: 10, hy: .35, hz: 1.8, r: .95, g: .25, b: .2, style: 2, mat: 'neon', st: si });
+    }
+  }
+  // スクランブル交差点（中央）
+  addRoad(0, 0, 26, 26, 0);
+  for (let i = -3; i <= 3; i++) {
+    World.add({ x: i * 5, y: .12, z: 0, hx: 1.5, hy: .1, hz: 24, r: .9, g: .9, b: .88, mat: 'asphalt', invul: true });
+    World.add({ x: 0, y: .12, z: i * 5, hx: 24, hy: .1, hz: 1.5, r: .9, g: .9, b: .88, mat: 'asphalt', invul: true });
+  }
+  // 車・看板
+  for (let i = 0; i < 220; i++) {
+    const onX = rng() < .5;
+    const a = (rndi(-N, N)) * block + rnd(-4, 4);
+    const b = rnd(-480, 480);
+    addProp('car', onX ? a : b, onX ? b : a, onX ? 0 : PI / 2, rng);
+  }
+  for (let i = 0; i < 70; i++) addProp('vend', rnd(-480, 480), rnd(-480, 480), rng() * TAU, rng);
+  for (let i = 0; i < 45; i++) addProp('sign', rnd(-480, 480), rnd(-480, 480), rng() * TAU, rng);
+  return { spawn: [0, 0, 0] };
+}
+//////////////////// 瓦礫 ////////////////////
+const Debris = {
+  cap: 2600, a: [], head: 0,
+  init() {
+    this.a.length = 0;
+    for (let i = 0; i < this.cap; i++) {
+      this.a.push({
+        alive: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0,
+        hx: 1, hy: 1, hz: 1, q: new Float32Array([0, 0, 0, 1]),
+        ax: 0, ay: 0, az: 0, r: 1, g: 1, b: 1, style: 0, life: 0, rest: false, mass: 1
+      });
+    }
+    this.head = 0;
+  },
+  spawn(x, y, z, hx, hy, hz, r, g, b, style, vx, vy, vz) {
+    let d = null;
+    for (let n = 0; n < this.cap; n++) {
+      const c = this.a[(this.head + n) % this.cap];
+      if (!c.alive) { d = c; this.head = (this.head + n + 1) % this.cap; break; }
+    }
+    if (!d) { d = this.a[this.head]; this.head = (this.head + 1) % this.cap; }
+    d.alive = true; d.rest = false;
+    d.x = x; d.y = y; d.z = z;
+    d.vx = vx; d.vy = vy; d.vz = vz;
+    d.hx = hx; d.hy = hy; d.hz = hz;
+    d.r = r; d.g = g; d.b = b; d.style = style;
+    d.q[0] = 0; d.q[1] = 0; d.q[2] = 0; d.q[3] = 1;
+    d.ax = rnd(-3, 3); d.ay = rnd(-3, 3); d.az = rnd(-3, 3);
+    d.life = rnd(26, 42);
+    d.mass = hx * hy * hz;
+    return d;
+  },
+  shatter(p, cx, cy, cz, collapse) {
+    const vol = p.vol;
+    let n = clamp(Math.round(Math.cbrt(vol) * .9), 2, 7);
+    if (vol < 1) n = 1;
+    const sc = Math.pow(1 / n, .34);
+    const push = collapse ? 4 : clamp(Math.cbrt(vol) * 1.6, 3, 26);
+    const mn = Math.max(.12, Math.max(p.hx, p.hy, p.hz) * sc * .30);
+    for (let i = 0; i < n; i++) {
+      const ox = rnd(-p.hx, p.hx) * .7, oy = rnd(-p.hy, p.hy) * .7, oz = rnd(-p.hz, p.hz) * .7;
+      let dx = p.x + ox - cx, dy = p.y + oy - cy, dz = p.z + oz - cz;
+      const l = Math.hypot(dx, dy, dz) || 1;
+      dx /= l; dy /= l; dz /= l;
+      const s = push * rnd(.5, 1.3);
+      this.spawn(
+        p.x + ox, p.y + oy, p.z + oz,
+        Math.max(mn, p.hx * sc * rnd(.55, 1.05)),
+        Math.max(mn, p.hy * sc * rnd(.6, 1.15)),
+        Math.max(mn, p.hz * sc * rnd(.55, 1.05)),
+        p.r * rnd(.82, 1.05), p.g * rnd(.82, 1.05), p.b * rnd(.82, 1.05),
+        p.style === 2 ? 2 : 0,
+        dx * s + rnd(-2, 2), Math.abs(dy) * s * .6 + rnd(2, 10) + (collapse ? -2 : 0), dz * s + rnd(-2, 2)
+      );
+    }
+  },
+  update(dt) {
+    const G = 26;
+    for (let i = 0; i < this.cap; i++) {
+      const d = this.a[i];
+      if (!d.alive) continue;
+      d.life -= dt;
+      if (d.life <= 0) { d.alive = false; continue; }
+      if (d.rest) continue;
+      d.vy -= G * dt;
+      d.x += d.vx * dt; d.y += d.vy * dt; d.z += d.vz * dt;
+      const floor = d.hy;
+      if (d.y < floor) {
+        d.y = floor;
+        if (d.vy < -2.4) {
+          d.vy *= -.28;
+          d.vx *= .62; d.vz *= .62;
+          d.ax *= .5; d.ay *= .5; d.az *= .5;
+          if (d.mass > 1.5 && Math.random() < .12) Fx.dust(d.x, .4, d.z, d.hy * 2);
+        } else {
+          d.vy = 0; d.vx *= .82; d.vz *= .82;
+          if (Math.hypot(d.vx, d.vz) < .5) { d.rest = true; d.vx = d.vz = 0; }
+        }
+      }
+      const damp = Math.exp(-dt * .35);
+      d.vx *= damp; d.vz *= damp;
+      if (d.ax || d.ay || d.az) {
+        qFromAxis(_tq, 1, 0, 0, d.ax * dt);
+        qMul(_tq2, d.q, _tq);
+        qFromAxis(_tq, 0, 1, 0, d.ay * dt);
+        qMul(_tq3, _tq2, _tq);
+        qFromAxis(_tq, 0, 0, 1, d.az * dt);
+        qMul(d.q, _tq3, _tq);
+        qNorm(d.q);
+        const ad = Math.exp(-dt * .6);
+        d.ax *= ad; d.ay *= ad; d.az *= ad;
+      }
+    }
+  },
+  // 掴める瓦礫を探す
+  nearest(x, y, z, rad) {
+    let best = null, bd = rad * rad;
+    for (let i = 0; i < this.cap; i++) {
+      const d = this.a[i];
+      if (!d.alive) continue;
+      const dd = (d.x - x) ** 2 + (d.y - y) ** 2 + (d.z - z) ** 2;
+      if (dd < bd) { bd = dd; best = d; }
+    }
+    return best;
+  },
+  draw(B) {
+    for (let i = 0; i < this.cap; i++) {
+      const d = this.a[i];
+      if (!d.alive) continue;
+      B.boxQ(d.x, d.y, d.z, d.hx, d.hy, d.hz, d.q, d.r, d.g, d.b, d.style);
+    }
+  },
+  count() { let n = 0; for (let i = 0; i < this.cap; i++) if (this.a[i].alive) n++; return n; }
+};
+
+//////////////////// エフェクト ////////////////////
+const Fx = {
+  cap: 1400, a: [], head: 0,
+  init() {
+    this.a.length = 0;
+    for (let i = 0; i < this.cap; i++) this.a.push({ alive: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, s: 1, s0: 1, gr: 0, r: 1, g: 1, b: 1, st: 2, t: 0, T: 1, grow: 0 });
+    this.head = 0;
+  },
+  get() {
+    const p = this.a[this.head];
+    this.head = (this.head + 1) % this.cap;
+    return p;
+  },
+  spark(x, y, z, n, src) {
+    for (let i = 0; i < n; i++) {
+      const p = this.get();
+      p.alive = true; p.x = x; p.y = y; p.z = z;
+      p.vx = rnd(-9, 9); p.vy = rnd(1, 13); p.vz = rnd(-9, 9);
+      p.s = p.s0 = rnd(.12, .4); p.gr = 22; p.grow = 0;
+      if (src) { p.r = src.r * 1.2; p.g = src.g * 1.2; p.b = src.b * 1.2; p.st = 0; }
+      else { p.r = 1; p.g = .8; p.b = .35; p.st = 2; }
+      p.t = 0; p.T = rnd(.35, .8);
+    }
+  },
+  dust(x, y, z, sz) {
+    const p = this.get();
+    p.alive = true; p.x = x; p.y = y; p.z = z;
+    p.vx = rnd(-1.5, 1.5); p.vy = rnd(.6, 2.4); p.vz = rnd(-1.5, 1.5);
+    p.s = p.s0 = sz * .7; p.gr = -1.2; p.grow = sz * 1.4;
+    p.r = .52; p.g = .49; p.b = .45; p.st = 0;
+    p.t = 0; p.T = rnd(1.1, 2.2);
+  },
+  smokeBurst(x, y, z, n, sz) {
+    for (let i = 0; i < n; i++) {
+      const p = this.get();
+      p.alive = true;
+      p.x = x + rnd(-sz, sz); p.y = y + rnd(0, sz); p.z = z + rnd(-sz, sz);
+      p.vx = rnd(-6, 6); p.vy = rnd(2, 9); p.vz = rnd(-6, 6);
+      p.s = p.s0 = Math.min(sz * rnd(.2, .5), 22); p.gr = -1.6; p.grow = Math.min(sz * .95, 34);
+      const k = rnd(.20, .34);
+      p.r = k; p.g = k * .95; p.b = k * .90; p.st = 0;
+      p.t = 0; p.T = rnd(1.5, 3.0);
+    }
+  },
+  boom(x, y, z, sz) {
+    for (let i = 0; i < 8; i++) {
+      const p = this.get();
+      p.alive = true;
+      p.x = x + rnd(-sz * .4, sz * .4); p.y = y + rnd(-sz * .3, sz * .5); p.z = z + rnd(-sz * .4, sz * .4);
+      p.vx = rnd(-sz, sz) * .8; p.vy = rnd(.2, 1.4) * sz; p.vz = rnd(-sz, sz) * .8;
+      p.s = p.s0 = Math.min(sz * rnd(.2, .45), 16); p.gr = -3; p.grow = Math.min(sz * .55, 22);
+      p.r = 1; p.g = rnd(.42, .75); p.b = rnd(.04, .18); p.st = 2;
+      p.t = 0; p.T = rnd(.25, .55);
+    }
+    this.smokeBurst(x, y, z, 5, sz * .8);
+  },
+  ring(x, y, z, sz) {
+    const n = 26;
+    const s0 = Math.min(sz * .085, 7);
+    for (let i = 0; i < n; i++) {
+      const a = i / n * TAU;
+      const p = this.get();
+      p.alive = true; p.x = x; p.y = y; p.z = z;
+      p.vx = Math.cos(a) * sz * 3.2; p.vy = rnd(.1, .6) * sz * .2; p.vz = Math.sin(a) * sz * 3.2;
+      p.s = p.s0 = s0; p.gr = 2; p.grow = s0 * 1.6;
+      p.r = 1; p.g = .82; p.b = .42; p.st = 2;
+      p.t = 0; p.T = .45;
+    }
+  },
+  update(dt) {
+    for (let i = 0; i < this.cap; i++) {
+      const p = this.a[i];
+      if (!p.alive) continue;
+      p.t += dt;
+      if (p.t >= p.T) { p.alive = false; continue; }
+      p.vy -= p.gr * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+      const k = p.t / p.T;
+      p.s = p.s0 * (1 - k * .85) + p.grow * k;
+      if (p.y < p.s * .3) { p.y = p.s * .3; p.vy *= -.2; p.vx *= .8; p.vz *= .8; }
+      const d = Math.exp(-dt * 1.2);
+      p.vx *= d; p.vz *= d;
+    }
+  },
+  draw(B) {
+    for (let i = 0; i < this.cap; i++) {
+      const p = this.a[i];
+      if (!p.alive) continue;
+      const k = 1 - p.t / p.T;
+      B.box(p.x, p.y, p.z, p.s, p.s, p.s, p.t * 2,
+        p.r * (p.st === 2 ? k : .6 + k * .4), p.g * (p.st === 2 ? k : .6 + k * .4), p.b * (p.st === 2 ? k : .6 + k * .4), p.st);
+    }
+  }
+};
+
+//////////////////// 怪獣データ ////////////////////
+const CHARS = [
+  {
+    id: 'nezumi', name: 'ネズミラ', icon: '🐀', size: .35,
+    desc: 'ちっちゃい。でも歯が凶悪。自販機と看板の天敵。すばしっこさは全キャラ最速。',
+    col: [.48, .43, .45], col2: [.80, .68, .66], spd: 1.9, dmg: 1.0, fly: .7, hp: 70
+  },
+  {
+    id: 'hobbit', name: 'ホビ丸', icon: '🧙', size: 1.2,
+    desc: '人サイズの小さな破壊者。等身大で見る街はやたらデカい。ジャンプ力おばけ。',
+    col: [.35, .55, .40], col2: [.85, .72, .55], spd: 1.5, dmg: 1.1, fly: 1.0, hp: 90
+  },
+  {
+    id: 'gorilla', name: 'ドスゴリラ', icon: '🦍', size: 22,
+    desc: '腕がすべて。殴りが速く、範囲も広い。地面を叩いて衝撃波。',
+    col: [.24, .22, .27], col2: [.55, .40, .32], spd: 1.15, dmg: 1.45, fly: .8, hp: 170
+  },
+  {
+    id: 'kaiju', name: 'ゴジ丸', icon: '🦖', size: 50,
+    desc: '王道の大怪獣。背びれが光り、口から熱線。迷ったらコレ。',
+    col: [.20, .33, .23], col2: [.32, .82, .98], spd: 1.0, dmg: 1.3, fly: .85, hp: 200
+  },
+  {
+    id: 'robo', name: 'メカ大魔神', icon: '🤖', size: 80,
+    desc: '飛行性能ダントツ。背中のブースターで空を切り裂き、腕からビーム。',
+    col: [.55, .58, .62], col2: [1, .35, .25], spd: 1.1, dmg: 1.2, fly: 1.8, hp: 190
+  },
+  {
+    id: 'dragon', name: 'ギガドラ', icon: '🐉', size: 120,
+    desc: '超巨大な翼竜。羽ばたくだけで街が吹き飛ぶ。一歩がもう災害。',
+    col: [.37, .20, .38], col2: [1, .58, .18], spd: .95, dmg: 1.6, fly: 1.5, hp: 240
+  },
+];
+
+//////////////////// プレイヤー ////////////////////
+const P = {
+  x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0,
+  yaw: 0, pitch: -.12, size: 50, char: CHARS[3],
+  flying: false, grounded: true, walk: 0, bob: 0,
+  hp: 100, hpMax: 100, en: 100, enMax: 100,
+  atkT: 0, atkArm: 0, beamT: 0, beaming: false, roarT: 0,
+  grab: null, grabT: 0, mouth: 0, hurtT: 0, stompArm: 0,
+  lastGround: 0, fallV: 0, dead: false,
+
+  reset(char, size, spawn) {
+    this.char = char; this.size = size;
+    this.x = spawn[0]; this.y = 0; this.z = spawn[2];
+    this.vx = this.vy = this.vz = 0;
+    this.yaw = 0; this.pitch = -.14;
+    this.flying = false; this.grounded = true;
+    this.hpMax = char.hp * (1 + Math.log10(clamp(size, .3, 400)) * .5);
+    this.hp = this.hpMax;
+    this.enMax = 100; this.en = 100;
+    this.grab = null; this.dead = false; this.hurtT = 0;
+    this.walk = 0;
+  },
+  get S() { return this.size; },
+  headY() { return this.y + this.size * (this.char.id === 'nezumi' ? .5 : .86); },
+  // 前方ベクトル
+  fx() { return Math.sin(this.yaw); },
+  fz() { return Math.cos(this.yaw); },
+
+  update(dt, keys) {
+    const S = this.size;
+    const spd = this.char.spd * (12 + S * .62) * (this.flying ? 1.45 : 1);
+    let ix = 0, iz = 0;
+    if (keys['KeyW']) iz += 1;
+    if (keys['KeyS']) iz -= 1;
+    if (keys['KeyA']) ix -= 1;
+    if (keys['KeyD']) ix += 1;
+    const boost = keys['ShiftLeft'] || keys['ShiftRight'] ? 1.85 : 1;
+    const l = Math.hypot(ix, iz);
+    let ax = 0, az = 0;
+    if (l > 0) {
+      ix /= l; iz /= l;
+      const fx = Math.sin(this.yaw), fz = Math.cos(this.yaw);
+      ax = (fx * iz + fz * ix) * spd * boost;
+      az = (fz * iz - fx * ix) * spd * boost;
+      // 進行方向へ向く
+      const want = Math.atan2(ax, az);
+      let d = want - this.yawBody;
+      while (d > PI) d -= TAU; while (d < -PI) d += TAU;
+      this.yawBody += d * clamp(dt * 9, 0, 1);
+    }
+    const accel = this.flying ? 3.2 : 6.5;
+    this.vx = smooth(this.vx, ax, dt * accel);
+    this.vz = smooth(this.vz, az, dt * accel);
+
+    if (this.flying) {
+      let vy = 0;
+      if (keys['Space']) vy += 1;
+      if (keys['ControlLeft'] || keys['ControlRight'] || keys['KeyC']) vy -= 1;
+      const fspd = (10 + S * .5) * this.char.fly;
+      this.vy = smooth(this.vy, vy * fspd, dt * 3.5);
+      this.y += this.vy * dt;
+      if (this.y < 0) { this.y = 0; this.vy = 0; }
+      this.grounded = this.y <= .01;
+      if (this.y > 0.2 && Math.random() < dt * 14) {
+        Fx.dust(this.x + rnd(-S * .3, S * .3), this.y + S * .1, this.z + rnd(-S * .3, S * .3), S * .06);
+      }
+    } else {
+      this.vy -= (24 + S * .18) * dt;
+      this.y += this.vy * dt;
+      if (this.y <= 0) {
+        if (this.vy < -8 - S * .2) this.land(-this.vy);
+        this.y = 0; this.vy = 0;
+        if (!this.grounded) { this.grounded = true; }
+      } else this.grounded = false;
+    }
+    this.x += this.vx * dt; this.z += this.vz * dt;
+    const lim = World.size - 40;
+    this.x = clamp(this.x, -lim, lim); this.z = clamp(this.z, -lim, lim);
+
+    // 歩行アニメ
+    const sp = Math.hypot(this.vx, this.vz);
+    if (this.grounded && !this.flying) {
+      this.walk += dt * clamp(sp / (S * .55 + 2), 0, 5) * 5;
+      // 足音・地響き
+      const step = Math.sin(this.walk);
+      if (step > .96 && sp > 1 && S > 6) {
+        Snd.thud(); Game.shake += clamp(S * .012, .05, .8);
+        Fx.dust(this.x + rnd(-S * .3, S * .3), .2, this.z + rnd(-S * .3, S * .3), S * .09);
+        World.damage(this.x, S * .05, this.z, S * .35, this.power() * .15, { silent: true });
+      }
+    } else this.walk += dt * 2;
+
+    // 建物との接触（体当たり）
+    if (sp > S * .18) {
+      const hit = World.hitBox(this.x, this.y + S * .45, this.z, S * .42);
+      if (hit) {
+        World.damage(this.x + Math.sin(this.yawBody) * S * .3, this.y + S * .45, this.z + Math.cos(this.yawBody) * S * .3, S * .5, this.power() * .5 * dt * 10);
+        this.vx *= .90; this.vz *= .90;
+        Game.shake += dt * 8;
+      }
+    }
+
+    // タイマー
+    this.atkT = Math.max(0, this.atkT - dt);
+    this.roarT = Math.max(0, this.roarT - dt);
+    this.grabT = Math.max(0, this.grabT - dt);
+    this.hurtT = Math.max(0, this.hurtT - dt);
+    this.atkArm = smooth(this.atkArm, 0, dt * 9);
+    this.stompArm = smooth(this.stompArm, 0, dt * 6);
+    this.mouth = smooth(this.mouth, this.beaming || this.roarT > .4 ? 1 : 0, dt * 14);
+    this.en = clamp(this.en + dt * (this.beaming ? -34 : 13), 0, this.enMax);
+    if (!this.dead) this.hp = clamp(this.hp + dt * this.hpMax * .012, 0, this.hpMax);
+
+    // つかんだ瓦礫を保持
+    if (this.grab) {
+      const hx = this.x + Math.sin(this.yawBody) * S * .55;
+      const hz = this.z + Math.cos(this.yawBody) * S * .55;
+      const hy = this.y + S * .62;
+      this.grab.x = hx; this.grab.y = hy; this.grab.z = hz;
+      this.grab.vx = this.grab.vy = this.grab.vz = 0;
+      this.grab.rest = false; this.grab.life = Math.max(this.grab.life, 5);
+    }
+  },
+  yawBody: 0,
+  power() {
+    const s = clamp(this.size, .2, 400);
+    return (10 + 46 * s * s * .04) * this.char.dmg + 8;
+  },
+  land(v) {
+    const S = this.size;
+    const p = clamp(v / (14 + S * .3), 0, 3);
+    if (p < .25) return;
+    Snd.thud();
+    Game.shake += 2 + p * 5 + S * .02;
+    this.stompArm = 1;
+    Fx.ring(this.x, .4, this.z, S * .35 * (1 + p));
+    Fx.smokeBurst(this.x, S * .05, this.z, 8, S * .3);
+    World.damage(this.x, S * .1, this.z, S * .9 * (1 + p * .6), this.power() * 2.2 * (1 + p));
+  },
+  punch() {
+    if (this.atkT > 0 || this.dead) return;
+    const S = this.size;
+    this.atkT = clamp(.42 - this.size * .0008, .13, .45) / (this.char.id === 'nezumi' ? 2.2 : 1);
+    this.atkArm = 1;
+    if (this.grab) { this.throwIt(); return; }
+    const rr = S * (this.char.id === 'gorilla' ? 1.5 : 1.15) + 1.6;
+    const cx = this.x + Math.sin(this.yawBody) * S * .75;
+    const cz = this.z + Math.cos(this.yawBody) * S * .75;
+    const cy = this.y + S * .62;
+    const n = World.damage(cx, cy, cz, rr, this.power() * 1.5);
+    Enemies.damageArea(cx, cy, cz, rr, this.power() * 1.6);
+    Snd.hit(clamp(S, .5, 60));
+    if (n) { Game.shake += clamp(n * .6, .3, 5); Fx.spark(cx, cy, cz, 6); Game.combo++; Game.comboT = 2.2; }
+    Fx.dust(cx, cy, cz, S * .1);
+  },
+  throwIt() {
+    const g = this.grab; if (!g) return;
+    const S = this.size;
+    const sp = 40 + S * 1.1;
+    const px = Math.sin(this.yawBody), pz = Math.cos(this.yawBody);
+    const py = Math.sin(this.pitch * .6) + .25;
+    g.vx = px * sp; g.vy = py * sp; g.vz = pz * sp;
+    g.rest = false;
+    g.thrown = 1.2;
+    this.grab = null;
+    Snd.crunch(1.2);
+    Game.toast('🪨 投げた！');
+  },
+  tryGrab() {
+    if (this.grab) { this.throwIt(); return; }
+    const S = this.size;
+    const gx = this.x + Math.sin(this.yawBody) * S * .7;
+    const gz = this.z + Math.cos(this.yawBody) * S * .7;
+    const d = Debris.nearest(gx, this.y + S * .3, gz, S * 1.4 + 4);
+    if (d) {
+      if (d.hx * d.hy * d.hz > S * S * S * .05) { Game.toast('❌ でかすぎて持てない'); Snd.err(); return; }
+      this.grab = d; Snd.coin(); Game.toast('✊ つかんだ');
+    } else { Snd.err(); }
+  },
+  roar() {
+    if (this.roarT > 0 || this.en < 30 || this.dead) return;
+    this.roarT = 2.6; this.en -= 30;
+    const S = this.size;
+    Snd.roar(S);
+    Game.shake += 6 + S * .05;
+    Fx.ring(this.x, this.y + S * .5, this.z, S * .8);
+    const R = S * 3.4 + 14;
+    const n = World.damage(this.x, this.y + S * .5, this.z, R, this.power() * 1.15);
+    Enemies.damageArea(this.x, this.y + S * .5, this.z, R, this.power() * 2.4);
+    Enemies.blowAway(this.x, this.y, this.z, R);
+    // 瓦礫を吹き飛ばす
+    for (let i = 0; i < Debris.cap; i++) {
+      const d = Debris.a[i];
+      if (!d.alive) continue;
+      const dx = d.x - this.x, dy = d.y - this.y, dz = d.z - this.z;
+      const l = Math.hypot(dx, dy, dz);
+      if (l > R || l < .01) continue;
+      const f = (1 - l / R) * (18 + S * .5);
+      d.rest = false;
+      d.vx += dx / l * f; d.vy += Math.abs(dy / l) * f * .7 + f * .3; d.vz += dz / l * f;
+    }
+    Game.toast('🔊 咆哮！ ' + n + '破壊');
+    Game.combo += n;
+    Game.comboT = 2.5;
+  },
+  fireBeam(dt) {
+    const S = this.size;
+    if (this.en <= 1) { this.beaming = false; return; }
+    this.beamT += dt;
+    const ox = this.x + Math.sin(this.yawBody) * S * .34;
+    const oy = this.headY();
+    const oz = this.z + Math.cos(this.yawBody) * S * .34;
+    const cp = Math.cos(this.pitch);
+    const dx = Math.sin(this.yaw) * cp, dy = Math.sin(this.pitch), dz = Math.cos(this.yaw) * cp;
+    const maxT = S * 14 + 220;
+    const hit = World.ray(ox, oy, oz, dx, dy, dz, maxT);
+    const et = Enemies.ray(ox, oy, oz, dx, dy, dz, hit.t);
+    let t = Math.min(hit.t, et.t, maxT);
+    // 地面
+    if (dy < -.001) { const gt = -oy / dy; if (gt > 0 && gt < t) t = gt; }
+    this.beamEnd = [ox + dx * t, oy + dy * t, oz + dz * t];
+    this.beamStart = [ox, oy, oz];
+    const R = S * .38 + 2.5;
+    World.damage(this.beamEnd[0], this.beamEnd[1], this.beamEnd[2], R, this.power() * 3.6 * dt);
+    if (et.e) Enemies.hurt(et.e, this.power() * 5 * dt);
+    if (Math.random() < dt * 34) {
+      Fx.boom(this.beamEnd[0], this.beamEnd[1], this.beamEnd[2], R * .8);
+      Snd.beam();
+    }
+    Game.shake += dt * 6;
+  },
+  hurt(d) {
+    if (this.dead) return;
+    this.hp -= d;
+    this.hurtT = .35;
+    Game.dmgFlash = 1;
+    if (this.hp <= 0) { this.hp = 0; this.dead = true; Game.onDeath(); }
+  },
+
+  //////////////////// 描画 ////////////////////
+  draw(B) {
+    const S = this.size, c = this.char;
+    const yaw = this.yawBody, cs = Math.cos(yaw), sn = Math.sin(yaw), self = this;
+    const spd = Math.hypot(this.vx, this.vz);
+    const lean = clamp(spd / (S * 2.4 + 10), 0, .28) + (this.flying ? .30 : 0);
+    const blink = this.hurtT > 0 && (((Game.time * 26) | 0) % 2 === 0);
+    const A = blink ? [1, .55, .5] : c.col;
+    const C2 = blink ? [1, .8, .75] : c.col2;
+    const LT = shade(A, 1.75), DK = shade(A, .66);
+    const w = Math.sin(this.walk), arm = this.atkArm, mo = this.mouth;
+    const grounded = this.grounded && !this.flying;
+
+    // ローカル(x=右, y=上, z=前, 単位=体高) → ワールド
+    function put(lx, ly, lz, hx, hy, hz, col, style, pitch) {
+      const wx = self.x + (lx * cs + lz * sn) * S;
+      const wz = self.z + (-lx * sn + lz * cs) * S;
+      const wy = self.y + ly * S;
+      let q;
+      if (pitch) {
+        qFromAxis(_tq, 0, 1, 0, yaw);
+        qFromAxis(_tq2, 1, 0, 0, pitch);
+        qMul(_tq3, _tq, _tq2); q = _tq3;
+      } else q = qYaw(yaw);
+      B.boxQ(wx, wy, wz, hx * S, hy * S, hz * S, q, col[0], col[1], col[2], style || 0);
+    }
+    function rot2(oy, oz, p) {
+      const cp = Math.cos(p), sp = Math.sin(p);
+      return [oy * cp - oz * sp, oy * sp + oz * cp];
+    }
+    // 支点(px,py,pz)から (ox,oy,oz) だけ伸びる部位。戻り値=先端[y,z]
+    function limb(px, py, pz, ox, oy, oz, hx, hy, hz, col, style, pitch) {
+      const p = pitch || 0;
+      const m = rot2(oy, oz, p), e = rot2(oy * 2, oz * 2, p);
+      put(px + ox, py + m[0], pz + m[1], hx, hy, hz, col, style, p);
+      return [py + e[0], pz + e[1]];
+    }
+
+    ///////////////// ネズミラ /////////////////
+    if (c.id === 'nezumi') {
+      const bob = Math.abs(Math.sin(this.walk)) * .02;
+      put(0, .30 + bob, -.02, .21, .18, .30, A, 0, lean * .35);
+      put(0, .27 + bob, -.02, .17, .12, .26, LT, 0, lean * .35);   // 腹
+      put(0, .35 + bob, .32, .155, .15, .15, A, 0, -.08);          // 頭
+      put(0, .30 + bob, .45, .085, .075, .05, LT);                 // 鼻づら
+      put(0, .285 + bob, .49, .035, .03, .03, [.95, .55, .6]);     // 鼻
+      for (const s of [-1, 1]) {
+        put(s * .14, .50 + bob, .30, .085, .085, .02, LT);         // 耳
+        put(s * .06, .385 + bob, .44, .028, .028, .022, [.85, .1, .12], 2);
+        put(s * .05, .265 + bob, .49, .028, .045 * (1 + arm * .8), .02, [1, 1, .92]);
+        // 前あし
+        const sw = grounded ? Math.sin(this.walk + (s > 0 ? PI : 0)) * .5 : .4;
+        const e1 = limb(s * .15, .26, .18, 0, -.08, 0, .045, .09, .05, DK, 0, -sw - arm * .9);
+        put(s * .15, e1[0], e1[1] + .02, .05, .03, .06, LT);
+        // 後ろあし
+        const sw2 = grounded ? Math.sin(this.walk + (s > 0 ? 0 : PI)) * .5 : .35;
+        const e2 = limb(s * .17, .26, -.16, 0, -.10, 0, .06, .11, .07, A, 0, -sw2);
+        put(s * .17, e2[0], e2[1] + .03, .06, .035, .08, LT);
+      }
+      // しっぽ
+      let ty = .30, tz = -.32, tp = .05;
+      for (let i = 0; i < 7; i++) {
+        const t = i / 7, th = .045 - t * .026;
+        const sway = Math.sin(this.walk * .8 + i * .7) * .08 * t;
+        const e = limb(sway, ty, tz, 0, 0, -.075, th, th, .075, [.72, .58, .58], 0, tp);
+        ty = e[0]; tz = e[1]; tp -= .055;
+      }
+      return;
+    }
+
+    ///////////////// メカ大魔神 /////////////////
+    if (c.id === 'robo') {
+      const th = this.flying ? .28 : 0;
+      put(0, .66, -.01, .25, .19, .16, A, 1, lean * .5);           // 胸
+      put(0, .46, 0, .17, .12, .14, DK, 0, lean * .4);             // 腰
+      put(0, .80, .12, .22, .05, .10, DK, 0, lean * .5);           // 肩アーマー
+      put(0, .90, .01, .13, .11, .13, A);                          // 頭
+      put(0, .90, .13, .135, .045, .035, C2, 2);                   // バイザー
+      put(0, 1.03, 0, .028, .06, .028, C2, 2);                     // アンテナ
+      put(0, .66, .16, .09, .08, .03, C2, 2);                      // 胸のコア
+      for (const s of [-1, 1]) {
+        const ex = s < 0 ? arm : arm * .3;
+        put(s * .30, .78, .02, .085, .08, .09, DK);                // 肩
+        const p1 = -.10 - ex * 1.35 + (grounded ? Math.sin(this.walk + (s > 0 ? PI : 0)) * .28 : .15);
+        const el = limb(s * .30, .74, .02, 0, -.11, 0, .075, .12, .08, A, 0, p1);
+        const wr = limb(s * .30, el[0], el[1], 0, -.10, 0, .065, .11, .07, DK, 0, p1 * .7);
+        put(s * .30, wr[0] - .01, wr[1] + .03, .075, .06, .075, A);
+        if (s < 0 && (arm > .3 || this.beaming)) put(s * .30, wr[0] - .01, wr[1] + .10, .05, .05, .05, C2, 2);
+        // 脚
+        const sw = this.flying ? .55 : Math.sin(this.walk + (s > 0 ? 0 : PI)) * .55;
+        const kn = limb(s * .14, .44, 0, 0, -.12, 0, .095, .13, .10, A, 0, sw);
+        const an = limb(s * .14, kn[0], kn[1], 0, -.105, 0, .08, .115, .085, DK, 0, sw * .3 + th);
+        put(s * .14, an[0] + .02, an[1] + .045, .095, .04, .14, A, 0, th);
+      }
+      // ブースター
+      for (const s of [-1, 1]) {
+        put(s * .18, .74, -.19, .08, .13, .07, DK);
+        if (this.flying || spd > S) {
+          const f = .09 + Math.random() * .16;
+          put(s * .18, .60 - f, -.19, .06, f, .06, [1, .62, .22], 2);
+        }
+      }
+      return;
+    }
+
+    ///////////////// ギガドラ /////////////////
+    if (c.id === 'dragon') {
+      const fl = Math.sin(Game.time * (this.flying ? 6.5 : 1.8)) * (this.flying ? 1 : .3);
+      put(0, .50, -.04, .24, .22, .30, A, 0, lean * .5 + .06);
+      put(0, .42, -.02, .19, .14, .26, LT, 0, .06);
+      // 首→頭
+      let ny = .64, nz = .22, np = -.42;
+      for (let i = 0; i < 4; i++) {
+        const t = i / 4;
+        const e = limb(0, ny, nz, 0, 0, .062, .105 - t * .022, .105 - t * .022, .062, A, 0, np);
+        ny = e[0]; nz = e[1]; np += .11;
+      }
+      put(0, ny + .02, nz + .10, .115, .095, .155, A, 0, -.08);
+      put(0, ny - .05 - mo * .05, nz + .13, .095, .04, .14, DK, 0, mo * .55);
+      for (const s of [-1, 1]) {
+        put(s * .06, ny + .09, nz + .16, .028, .028, .028, [1, .85, .18], 2);
+        put(s * .085, ny + .16, nz + .02, .028, .10, .028, C2, 0, -.55);
+      }
+      // 翼
+      for (const s of [-1, 1]) {
+        const w1 = limb(s * .17, .66, -.02, s * .22, .05 + fl * .10, 0, .22, .028, .24, C2, 0, 0);
+        put(s * .60, .70 + fl * .13, -.05, .20, .026, .22, shade(C2, .85));
+        put(s * .95, .66 + fl * .26, -.10, .19, .024, .18, shade(C2, .72));
+        put(s * .40, .78 + fl * .16, -.02, .22, .03, .035, DK);   // 翼骨
+      }
+      // 脚
+      for (const s of [-1, 1]) {
+        const sw = this.flying ? .75 : Math.sin(this.walk + (s > 0 ? PI : 0)) * .55;
+        const kn = limb(s * .18, .40, .02, 0, -.11, 0, .105, .12, .11, A, 0, sw);
+        const an = limb(s * .18, kn[0], kn[1], 0, -.10, 0, .085, .11, .09, DK, 0, sw * .3);
+        put(s * .18, an[0] + .02, an[1] + .05, .105, .04, .15, C2, 0, 0);
+      }
+      // しっぽ
+      let ty = .46, tz = -.32, tp = .16;
+      for (let i = 0; i < 8; i++) {
+        const t = i / 8, th = .095 - t * .062;
+        const sway = Math.sin(Game.time * 1.9 + i * .6) * .10 * t;
+        const e = limb(sway, ty, tz, 0, 0, -.068, th, th, .068, A, 0, tp);
+        ty = e[0]; tz = e[1]; tp -= .07;
+      }
+      put(0, ty + .04, tz - .05, .12, .05, .12, C2, 0, -.3);
+      return;
+    }
+
+    ///////////////// ドスゴリラ /////////////////
+    if (c.id === 'gorilla') {
+      const hunch = .18;
+      put(0, .68, -.02, .29, .21, .20, A, 0, hunch + lean * .5);   // 胸（でかい）
+      put(0, .46, .02, .21, .15, .17, DK, 0, .08);                 // 腰
+      put(0, .70, .16, .17, .13, .05, LT, 0, hunch);               // 胸板
+      put(0, .90, .06, .135, .115, .14, A, 0, -.06);               // 頭
+      put(0, .845, .19, .105, .062, .06, LT, 0, mo * .35);         // 口元
+      put(0, .98, .08, .12, .04, .11, DK, 0, -.1);                 // 眉
+      for (const s of [-1, 1]) {
+        put(s * .055, .915, .175, .026, .026, .022, [.08, .05, .05]);
+        put(s * .155, .92, .04, .045, .05, .03, LT);               // 耳
+        // 極太の腕
+        const ex = s < 0 ? arm : arm * .35;
+        put(s * .32, .80, .0, .10, .09, .10, A);
+        const p1 = -.05 - ex * 1.4 + (grounded ? Math.sin(this.walk + (s > 0 ? PI : 0)) * .34 : .2);
+        const el = limb(s * .34, .76, 0, 0, -.15, 0, .105, .16, .11, A, 0, p1);
+        const wr = limb(s * .34, el[0], el[1], 0, -.13, 0, .095, .14, .10, A, 0, p1 * .6);
+        put(s * .34, wr[0] - .02, wr[1] + .03, .11, .07, .12, LT);  // こぶし
+        // 短い脚
+        const sw = Math.sin(this.walk + (s > 0 ? 0 : PI)) * .45;
+        const kn = limb(s * .155, .42, 0, 0, -.11, 0, .115, .12, .12, A, 0, sw);
+        const an = limb(s * .155, kn[0], kn[1], 0, -.09, 0, .10, .10, .105, DK, 0, sw * .3);
+        put(s * .155, an[0] + .02, an[1] + .05, .115, .04, .15, LT);
+      }
+      return;
+    }
+
+    ///////////////// ホビ丸 /////////////////
+    if (c.id === 'hobbit') {
+      put(0, .60, 0, .155, .17, .11, A, 0, lean * .5);
+      put(0, .60, .10, .11, .13, .03, LT, 0, lean * .5);           // 前身頃
+      put(0, .84, .01, .105, .10, .105, C2);                       // 顔
+      put(0, .96, 0, .155, .035, .155, A);                         // つば
+      put(0, 1.02, -.01, .075, .055, .075, A);                     // 帽子
+      for (const s of [-1, 1]) {
+        put(s * .04, .855, .105, .022, .022, .02, [.08, .08, .1]);
+        put(s * .105, .84, 0, .022, .04, .03, C2);                 // 耳
+        const ex = s < 0 ? arm : arm * .3;
+        const p1 = -.15 - ex * 1.5 + (grounded ? Math.sin(this.walk + (s > 0 ? PI : 0)) * .55 : .25);
+        const el = limb(s * .175, .70, 0, 0, -.085, 0, .04, .09, .042, A, 0, p1);
+        const wr = limb(s * .175, el[0], el[1], 0, -.075, 0, .036, .08, .038, C2, 0, p1 * .6);
+        put(s * .175, wr[0] - .01, wr[1] + .02, .04, .035, .04, C2);
+        const sw = Math.sin(this.walk + (s > 0 ? 0 : PI)) * .6;
+        const kn = limb(s * .075, .42, 0, 0, -.10, 0, .055, .11, .06, [.28, .25, .30], 0, sw);
+        const an = limb(s * .075, kn[0], kn[1], 0, -.085, 0, .048, .09, .052, [.28, .25, .30], 0, sw * .3);
+        put(s * .075, an[0] + .015, an[1] + .035, .06, .032, .10, [.20, .14, .10]);
+      }
+      // マント
+      put(0, .62, -.10, .16, .19, .025, [.55, .12, .14], 0, -.12 + lean * .4);
+      return;
+    }
+
+    ///////////////// ゴジ丸（標準怪獣） /////////////////
+    const tilt = lean * .55 + .07;
+    put(0, .62, -.01, .215, .20, .175, A, 0, tilt);              // 胸
+    put(0, .44, .02, .195, .145, .165, A, 0, .05);               // 腹
+    put(0, .44, .14, .13, .12, .04, LT, 0, .05);                 // 腹の明色
+    put(0, .64, .13, .14, .14, .04, LT, 0, tilt);
+    // 首→頭
+    put(0, .80, .06, .11, .09, .105, A, 0, -.34);
+    put(0, .925, .19, .135, .115, .165, A, 0, -.06);             // 頭
+    put(0, .862 - mo * .06, .29, .112, .05, .15, DK, 0, mo * .5);// 下あご
+    put(0, 1.025, .17, .12, .04, .11, DK, 0, -.14);              // 眉
+    for (const s of [-1, 1]) {
+      put(s * .072, .975, .30, .032, .032, .03, [1, .88, .22], 2);  // 目
+      put(s * .10, 1.06, .09, .028, .065, .028, DK, 0, -.35);       // 角
+    }
+    // 背びれ（熱線時に光る）
+    const glow = this.beaming || mo > .35;
+    for (let i = 0; i < 7; i++) {
+      const t = i / 7;
+      put(0, .80 - t * .20, -.10 - t * .30, .032, .105 - t * .05, .06,
+        glow ? C2 : shade(C2, .48), glow ? 2 : 0, .30);
+    }
+    // 腕
+    for (const s of [-1, 1]) {
+      const ex = s < 0 ? arm : arm * .35;
+      put(s * .215, .74, .02, .075, .075, .085, A);
+      const p1 = -.30 - ex * 1.25 + (grounded ? Math.sin(this.walk + (s > 0 ? PI : 0)) * .30 : .12);
+      const el = limb(s * .225, .70, .01, 0, -.095, 0, .066, .10, .072, A, 0, p1);
+      const wr = limb(s * .225, el[0], el[1], 0, -.085, 0, .056, .09, .062, A, 0, p1 * .55 - .25);
+      put(s * .225, wr[0] - .015, wr[1] + .035, .062, .048, .075, LT);
+    }
+    // 脚
+    for (const s of [-1, 1]) {
+      const sw = this.flying ? .62 : Math.sin(this.walk + (s > 0 ? 0 : PI)) * .55;
+      const kn = limb(s * .155, .45, 0, 0, -.125, 0, .105, .135, .115, A, 0, sw);
+      const an = limb(s * .155, kn[0], kn[1], 0, -.11, 0, .085, .12, .095, A, 0, sw * .3);
+      put(s * .155, an[0] + .02, an[1] + .05, .105, .04, .155, LT, 0, 0);
+    }
+    // しっぽ
+    let ty = .47, tz = -.28, tp = .17;
+    for (let i = 0; i < 9; i++) {
+      const t = i / 9, th = .10 - t * .066;
+      const sway = Math.sin(Game.time * 2.1 + i * .55) * .09 * t;
+      const e = limb(sway, ty, tz, 0, 0, -.062, th, th, .062, A, 0, tp);
+      ty = e[0]; tz = e[1]; tp -= .062;
+    }
+  },
+  drawBeam(B) {
+    if (!this.beaming || !this.beamEnd) return;
+    const a = this.beamStart, b = this.beamEnd;
+    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+    const L = Math.hypot(dx, dy, dz);
+    const n = clamp(Math.round(L / (this.size * .5 + 3)), 4, 90);
+    const R = this.size * .085 + .5;
+    const cc = this.char.col2;
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      const w = R * (1 + Math.sin(Game.time * 40 + i) * .28) * (1 + t * .5);
+      B.box(a[0] + dx * t, a[1] + dy * t, a[2] + dz * t, w, w, w, Game.time * 3 + i,
+        cc[0], cc[1], cc[2], 2);
+    }
+    const e = this.size * .3 + 2;
+    B.box(b[0], b[1], b[2], e, e, e, Game.time * 5, 1, .95, .8, 2);
+  }
+};
+
+//////////////////// 敵（自衛隊） ////////////////////
+const Enemies = {
+  a: [], shots: [], spawnT: 6, wave: 0,
+  reset() { this.a.length = 0; this.shots.length = 0; this.spawnT = 10; this.wave = 0; },
+  spawn(kind) {
+    const S = P.size;
+    const a = rnd(0, TAU), r = 260 + rnd(0, 200);
+    const x = P.x + Math.cos(a) * r, z = P.z + Math.sin(a) * r;
+    if (kind === 'jet') {
+      this.a.push({ kind, x, y: 90 + rnd(0, 90), z, vx: 0, vy: 0, vz: 0, hp: 60, t: 0, ct: rnd(1, 3), yaw: 0 });
+    } else {
+      this.a.push({ kind: 'tank', x, y: 0, z, vx: 0, vy: 0, vz: 0, hp: 90, t: 0, ct: rnd(1, 3), yaw: 0 });
+    }
+  },
+  update(dt) {
+    if (P.dead) return;
+    this.spawnT -= dt;
+    const maxN = clamp(3 + Math.floor(Game.score / 9000), 3, 16);
+    if (this.spawnT <= 0 && this.a.length < maxN) {
+      this.spawnT = clamp(7 - Game.score / 30000, 2.2, 7);
+      this.spawn(Math.random() < .45 ? 'jet' : 'tank');
+    }
+    const S = P.size;
+    for (let i = this.a.length - 1; i >= 0; i--) {
+      const e = this.a[i];
+      e.t += dt;
+      const dx = P.x - e.x, dz = P.z - e.z;
+      const dist = Math.hypot(dx, dz);
+      e.yaw = Math.atan2(dx, dz);
+      if (e.kind === 'tank') {
+        const want = clamp(120 + S * 1.4, 90, 400);
+        const dir = dist > want ? 1 : -1;
+        const sp = 22;
+        e.x += (dx / (dist || 1)) * sp * dir * dt;
+        e.z += (dz / (dist || 1)) * sp * dir * dt;
+        e.y = 0;
+      } else {
+        // ジェット：周回
+        const orb = clamp(180 + S * 2, 150, 520);
+        const ang = Math.atan2(e.z - P.z, e.x - P.x) + dt * .55;
+        e.x = P.x + Math.cos(ang) * orb;
+        e.z = P.z + Math.sin(ang) * orb;
+        e.y = smooth(e.y, P.y + S * .8 + 40, dt * .9);
+        e.yaw = Math.atan2(P.x - e.x, P.z - e.z);
+      }
+      e.ct -= dt;
+      if (e.ct <= 0 && dist < 620) {
+        e.ct = e.kind === 'jet' ? rnd(1.4, 2.6) : rnd(2.2, 3.6);
+        const tx = P.x + rnd(-S * .3, S * .3), ty = P.y + S * .55, tz = P.z + rnd(-S * .3, S * .3);
+        const ox = e.x, oy = e.y + (e.kind === 'tank' ? 3 : 0), oz = e.z;
+        let vx = tx - ox, vy = ty - oy, vz = tz - oz;
+        const l = Math.hypot(vx, vy, vz) || 1;
+        const sp = e.kind === 'jet' ? 220 : 190;
+        this.shots.push({ x: ox, y: oy, z: oz, vx: vx / l * sp, vy: vy / l * sp, vz: vz / l * sp, t: 0, dmg: e.kind === 'jet' ? 9 : 7 });
+        Snd.cannon();
+      }
+      if (e.hp <= 0) {
+        Fx.boom(e.x, e.y + 2, e.z, e.kind === 'jet' ? 8 : 6);
+        Snd.boom(.7);
+        Game.score += 500;
+        Game.toast('✈️ ' + (e.kind === 'jet' ? '戦闘機' : '戦車') + '撃墜 +500');
+        this.a.splice(i, 1);
+      }
+    }
+    // 弾
+    for (let i = this.shots.length - 1; i >= 0; i--) {
+      const s = this.shots[i];
+      s.t += dt;
+      s.x += s.vx * dt; s.y += s.vy * dt; s.z += s.vz * dt;
+      s.vy -= 8 * dt;
+      const d = Math.hypot(s.x - P.x, s.y - (P.y + S * .5), s.z - P.z);
+      if (d < S * .5 + 3) {
+        P.hurt(s.dmg * (1 + Game.difficulty * .4));
+        Fx.boom(s.x, s.y, s.z, S * .1 + 2);
+        Snd.boom(.5);
+        Game.shake += 2;
+        this.shots.splice(i, 1); continue;
+      }
+      if (s.y < 0 || s.t > 5) {
+        Fx.boom(s.x, Math.max(s.y, 1), s.z, 4);
+        World.damage(s.x, Math.max(s.y, 1), s.z, 7, 300);
+        this.shots.splice(i, 1);
+      }
+    }
+  },
+  damageArea(x, y, z, r, dmg) {
+    for (const e of this.a) {
+      const d = Math.hypot(e.x - x, e.y - y, e.z - z);
+      if (d < r + 5) e.hp -= dmg;
+    }
+  },
+  blowAway(x, y, z, r) {
+    for (const e of this.a) {
+      const d = Math.hypot(e.x - x, e.z - z);
+      if (d < r) { e.hp -= 40; }
+    }
+  },
+  hurt(e, d) { e.hp -= d; },
+  ray(ox, oy, oz, dx, dy, dz, maxT) {
+    let best = null, bt = maxT;
+    for (const e of this.a) {
+      const p = { x: e.x, y: e.y + 2, z: e.z, hx: 6, hy: 4, hz: 6 };
+      const t = rayBox(ox, oy, oz, dx, dy, dz, p);
+      if (t >= 0 && t < bt) { bt = t; best = e; }
+    }
+    return { e: best, t: bt };
+  },
+  draw(B) {
+    for (const e of this.a) {
+      const q = qYaw(e.yaw);
+      if (e.kind === 'tank') {
+        B.boxQ(e.x, e.y + 1.4, e.z, 4.2, 1.1, 2.4, q, .32, .36, .28, 0);
+        B.boxQ(e.x, e.y + 3.2, e.z, 2.4, .9, 2.0, q, .28, .32, .24, 0);
+        const fx = Math.sin(e.yaw), fz = Math.cos(e.yaw);
+        B.boxQ(e.x + fx * 5, e.y + 3.2, e.z + fz * 5, 3.2, .28, .28, q, .22, .25, .2, 0);
+      } else {
+        B.boxQ(e.x, e.y, e.z, 1.6, 1.0, 7.0, q, .30, .34, .40, 0);
+        B.boxQ(e.x, e.y, e.z, 8.5, .35, 1.6, q, .34, .38, .44, 0);
+        B.boxQ(e.x, e.y + 1.2, e.z - 4, .5, 1.4, 1.6, q, .30, .34, .40, 0);
+        B.boxQ(e.x, e.y, e.z - 6.6, 1.0, 1.0, 1.2, q, 1, .55, .2, 2);
+      }
+    }
+    for (const s of this.shots) B.box(s.x, s.y, s.z, .7, .7, 1.6, 0, 1, .8, .3, 2);
+  }
+};
+
+//////////////////// 逃げる市民 ////////////////////
+const Cits = {
+  a: [], max: 90,
+  reset() { this.a.length = 0; },
+  update(dt) {
+    const S = P.size;
+    const R = clamp(S * 5 + 60, 80, 340);
+    // 補充
+    while (this.a.length < this.max) {
+      const ang = rnd(0, TAU), r = rnd(R * .35, R);
+      this.a.push({
+        x: P.x + Math.cos(ang) * r, z: P.z + Math.sin(ang) * r,
+        y: 0, ph: rnd(0, TAU), c: [rnd(.2, .9), rnd(.2, .9), rnd(.2, .9)],
+        sk: [rnd(.7, .95), rnd(.55, .78), rnd(.45, .65)], sp: rnd(4.5, 8), yaw: 0
+      });
+    }
+    for (let i = this.a.length - 1; i >= 0; i--) {
+      const c = this.a[i];
+      let dx = c.x - P.x, dz = c.z - P.z;
+      const d = Math.hypot(dx, dz) || 1;
+      if (d > R * 1.35 || d < 1) { this.a.splice(i, 1); continue; }
+      const panic = clamp(1 - d / (S * 3 + 40), 0, 1);
+      const sp = c.sp * (1 + panic * 2.2);
+      c.x += (dx / d) * sp * dt + Math.cos(c.ph) * .4 * dt;
+      c.z += (dz / d) * sp * dt + Math.sin(c.ph) * .4 * dt;
+      c.ph += dt * 6;
+      c.yaw = Math.atan2(dx, dz);
+      c.y = Math.abs(Math.sin(c.ph * 1.4)) * .18;
+    }
+  },
+  draw(B) {
+    if (P.size > 160) return;
+    for (const c of this.a) {
+      const q = qYaw(c.yaw);
+      B.boxQ(c.x, c.y + .62, c.z, .22, .32, .16, q, c.c[0], c.c[1], c.c[2], 0);
+      B.boxQ(c.x, c.y + 1.05, c.z, .16, .16, .16, q, c.sk[0], c.sk[1], c.sk[2], 0);
+      const sw = Math.sin(c.ph * 2) * .18;
+      B.boxQ(c.x, c.y + .22, c.z + sw, .09, .24, .09, q, .2, .22, .3, 0);
+      B.boxQ(c.x, c.y + .22, c.z - sw, .09, .24, .09, q, .2, .22, .3, 0);
+    }
+  }
+};
+//////////////////// 建設モード ////////////////////
+function specHouse(w, d, floors) {
+  const out = [];
+  const wc = [.90, .87, .80], rc = [.28, .32, .36];
+  const h = 3.6 * floors;
+  out.push({ x: 0, y: h / 2, z: 0, hx: w / 2, hy: h / 2, hz: d / 2, c: wc, s: 0, m: 'wood' });
+  out.push({ x: 0, y: .55, z: 0, hx: w / 2 * 1.02, hy: .55, hz: d / 2 * 1.02, c: shade(wc, .72), s: 0, m: 'concrete' });
+  const slope = .58, rl = (d / 2) / Math.cos(slope);
+  for (const s of [1, -1]) {
+    out.push({
+      x: 0, y: h + Math.tan(slope) * (d / 4) * .5 + .1, z: (d / 4) * s,
+      hx: w / 2 + .5, hy: .22, hz: rl / 2 + .35, c: rc, s: 3, m: 'tile', rx: slope * s
+    });
+  }
+  return out;
+}
+function specTower(w, d, floors, fh, base) {
+  const out = [];
+  for (let f = 0; f < floors; f++) {
+    const cc = shade(base, .93 + ((f % 3) * .035));
+    out.push({ x: 0, y: f * fh + fh / 2, z: 0, hx: w / 2, hy: fh / 2, hz: d / 2, c: cc, s: 1, m: f < 2 ? 'concrete' : 'steel' });
+  }
+  out.push({ x: 0, y: floors * fh + .6, z: 0, hx: w * .26, hy: .6, hz: d * .26, c: shade(base, .7), s: 0, m: 'concrete' });
+  return out;
+}
+
+const BUILD = [
+  {
+    id: 'house', n: '民家', ic: '🏠', cost: { wood: 22 }, pop: 4, sc: 120, w: 10, d: 9,
+    d1: '瓦屋根の一軒家', spec: () => specHouse(10, 9, 1)
+  },
+  {
+    id: 'house2', n: '二階建て', ic: '🏡', cost: { wood: 38, concrete: 12 }, pop: 8, sc: 240, w: 11, d: 10,
+    d1: '二階建ての民家', spec: () => specHouse(11, 10, 2)
+  },
+  {
+    id: 'shop', n: '商店', ic: '🏪', cost: { wood: 24, concrete: 18, neon: 10 }, pop: 9, sc: 320, w: 12, d: 11,
+    d1: 'ネオン看板つき', spec: () => {
+      const o = specTower(12, 11, 2, 3.8, [.90, .87, .80]);
+      o.push({ x: 0, y: 8.4, z: 5.8, hx: 4.6, hy: .9, hz: .3, c: [1, .35, .35], s: 2, m: 'neon' });
+      return o;
+    }
+  },
+  {
+    id: 'apart', n: 'アパート', ic: '🏢', cost: { wood: 40, concrete: 55 }, pop: 26, sc: 700, w: 18, d: 14,
+    d1: '4階建て集合住宅', spec: () => specTower(18, 14, 4, 3.4, [.78, .76, .70])
+  },
+  {
+    id: 'biz', n: '雑居ビル', ic: '🏬', cost: { steel: 70, concrete: 90 }, pop: 60, sc: 1600, w: 22, d: 20,
+    d1: '8階建てのビル', spec: () => specTower(22, 20, 8, 3.6, [.42, .44, .50])
+  },
+  {
+    id: 'tower', n: '高層ビル', ic: '🏙️', cost: { steel: 260, concrete: 320, neon: 45 }, pop: 260, sc: 8000, w: 30, d: 28,
+    d1: '25階建て。街のシンボル', spec: () => {
+      const o = specTower(30, 28, 25, 3.7, [.34, .38, .46]);
+      o.push({ x: 0, y: 96, z: 0, hx: 11, hy: 1.6, hz: .4, c: [.2, .95, 1], s: 2, m: 'neon' });
+      return o;
+    }
+  },
+  {
+    id: 'saw', n: '製材所', ic: '🪚', cost: { steel: 34, concrete: 26 }, prod: { wood: 1.7 }, sc: 400, w: 16, d: 14,
+    d1: '木材を自動生産', spec: () => {
+      const o = specTower(16, 14, 2, 4.2, [.55, .42, .30]);
+      o.push({ x: 5, y: 12, z: 0, hx: 1.1, hy: 4, hz: 1.1, c: [.5, .5, .52], s: 0, m: 'steel' });
+      return o;
+    }
+  },
+  {
+    id: 'cem', n: 'コンクリ工場', ic: '🏭', cost: { steel: 55, wood: 26 }, prod: { concrete: 2.0 }, sc: 500, w: 18, d: 16,
+    d1: 'コンクリを自動生産', spec: () => {
+      const o = specTower(18, 16, 2, 4.4, [.62, .60, .56]);
+      o.push({ x: -5, y: 14, z: 0, hx: 2.2, hy: 5.5, hz: 2.2, c: [.7, .68, .64], s: 0, m: 'concrete' });
+      o.push({ x: 5, y: 16, z: 0, hx: 1.2, hy: 7.5, hz: 1.2, c: [.55, .53, .5], s: 0, m: 'steel' });
+      return o;
+    }
+  },
+  {
+    id: 'mill', n: '製鉄所', ic: '⚒️', cost: { concrete: 95, wood: 34 }, prod: { steel: 1.4 }, sc: 700, w: 22, d: 18,
+    d1: '鉄骨を自動生産', spec: () => {
+      const o = specTower(22, 18, 3, 5.0, [.44, .40, .38]);
+      o.push({ x: -7, y: 22, z: 0, hx: 1.6, hy: 7, hz: 1.6, c: [.5, .3, .25], s: 0, m: 'steel' });
+      o.push({ x: 7, y: 20, z: 0, hx: 1.4, hy: 5, hz: 1.4, c: [.5, .3, .25], s: 0, m: 'steel' });
+      return o;
+    }
+  },
+  {
+    id: 'power', n: '発電所', ic: '⚡', cost: { steel: 110, concrete: 130 }, prod: { neon: 1.1 }, sc: 1200, w: 26, d: 22,
+    d1: '電力（ネオン）を自動生産', spec: () => {
+      const o = specTower(26, 22, 3, 5.2, [.60, .62, .66]);
+      for (const s of [-1, 1]) o.push({ x: s * 8, y: 26, z: 0, hx: 2.6, hy: 10, hz: 2.6, c: [.75, .74, .72], s: 0, m: 'concrete' });
+      o.push({ x: 0, y: 17, z: 0, hx: 3, hy: 1, hz: 3, c: [.2, .9, 1], s: 2, m: 'neon' });
+      return o;
+    }
+  },
+  {
+    id: 'park', n: '公園', ic: '🌳', cost: { wood: 14 }, pop: 3, sc: 150, w: 14, d: 14,
+    d1: '緑地。ちょっと人が増える', spec: () => {
+      const o = [{ x: 0, y: .12, z: 0, hx: 7, hy: .15, hz: 7, c: [.30, .52, .26], s: 5, m: 'earth' }];
+      for (let i = 0; i < 4; i++) {
+        const a = i / 4 * TAU;
+        const x = Math.cos(a) * 4.4, z = Math.sin(a) * 4.4;
+        o.push({ x, y: 1.6, z, hx: .22, hy: 1.6, hz: .22, c: [.32, .24, .16], s: 0, m: 'wood' });
+        o.push({ x, y: 4, z, hx: 1.9, hy: 1.6, hz: 1.9, c: [.16, .44, .18], s: 0, m: 'plant' });
+      }
+      return o;
+    }
+  },
+  {
+    id: 'road', n: '道路', ic: '🛣️', cost: { concrete: 8 }, sc: 40, w: 16, d: 16,
+    d1: '舗装する。整備した気分', spec: () => [{ x: 0, y: .06, z: 0, hx: 8, hy: .08, hz: 8, c: [.20, .20, .22], s: 4, m: 'asphalt' }]
+  },
+  {
+    id: 'sign', n: 'ネオン看板', ic: '🪧', cost: { steel: 12, neon: 16 }, sc: 260, w: 4, d: 4,
+    d1: 'ド派手に光る', spec: () => [
+      { x: 0, y: 6, z: 0, hx: .35, hy: 6, hz: .35, c: [.5, .5, .52], s: 0, m: 'steel' },
+      { x: 0, y: 13.5, z: 0, hx: 3.2, hy: 2, hz: .3, c: [1, .25, .5], s: 2, m: 'neon' },
+    ]
+  },
+  {
+    id: 'pylon', n: '送電鉄塔', ic: '🗼', cost: { steel: 70 }, sc: 500, w: 10, d: 10,
+    d1: 'インフラ感が出る', spec: () => {
+      const o = [];
+      for (let i = 0; i < 5; i++) {
+        const y = 4 + i * 8, sp = 3.4 * (1 - i * .13);
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) o.push({ x: sx * sp, y, z: sz * sp, hx: .28, hy: 4, hz: .28, c: [.55, .57, .60], s: 0, m: 'steel' });
+        if (i > 1) o.push({ x: 0, y: y + 4, z: 0, hx: 7 - i, hy: .25, hz: .25, c: [.55, .57, .60], s: 0, m: 'steel' });
+      }
+      return o;
+    }
+  },
+  {
+    id: 'statue', n: '俺の像', ic: '🗿', cost: { steel: 180, concrete: 200, neon: 70 }, pop: 0, sc: 20000, w: 20, d: 20,
+    d1: '自分の像を建てる。破壊の記念碑', spec: () => {
+      const c = P.char.col, c2 = P.char.col2;
+      return [
+        { x: 0, y: 4, z: 0, hx: 9, hy: 4, hz: 9, c: [.62, .60, .56], s: 0, m: 'concrete' },
+        { x: 0, y: 8.5, z: 0, hx: 6.4, hy: .8, hz: 6.4, c: [.70, .68, .64], s: 0, m: 'concrete' },
+        { x: 0, y: 16, z: 0, hx: 4.2, hy: 7, hz: 3.2, c: c, s: 0, m: 'steel' },
+        { x: 0, y: 25, z: .4, hx: 2.6, hy: 2.4, hz: 2.8, c: c, s: 0, m: 'steel' },
+        { x: -1.2, y: 26.4, z: 3.0, hx: .5, hy: .5, hz: .5, c: c2, s: 2, m: 'neon' },
+        { x: 1.2, y: 26.4, z: 3.0, hx: .5, hy: .5, hz: .5, c: c2, s: 2, m: 'neon' },
+        { x: -5.6, y: 18, z: 0, hx: 1.6, hy: 5.5, hz: 1.6, c: c, s: 0, m: 'steel' },
+        { x: 5.6, y: 18, z: 0, hx: 1.6, hy: 5.5, hz: 1.6, c: c, s: 0, m: 'steel' },
+        { x: 0, y: 30, z: 0, hx: 5, hy: 1.2, hz: .4, c: c2, s: 2, m: 'neon' },
+      ];
+    }
+  },
+];
+
+const Builder = {
+  on: false, sel: 0, rot: 0, gx: 0, gz: 0, ok: false, snap: 6,
+  toggle() {
+    this.on = !this.on;
+    Game.badge(this.on ? '建 設 モ ー ド' : '破 壊 モ ー ド', this.on ? '#5dff8f' : '#ff2b2b');
+    document.getElementById('buildbar').classList.toggle('hidden', !this.on);
+    document.getElementById('cross').classList.toggle('hidden', !this.on);
+    Snd.ui();
+    this.refresh();
+  },
+  def() { return BUILD[this.sel]; },
+  select(i) {
+    this.sel = clamp(i, 0, BUILD.length - 1);
+    Snd.ui(); this.refresh();
+  },
+  canAfford(d) {
+    for (const k in d.cost) if (Game.res[k] < d.cost[k]) return false;
+    return true;
+  },
+  // カメラ前方の地面カーソル
+  updateCursor() {
+    const cam = Cam;
+    const dx = cam.dx, dy = cam.dy, dz = cam.dz;
+    let t = 1e9;
+    if (dy < -.001) t = -(cam.y) / dy;
+    const maxD = clamp(P.size * 6 + 14, 14, 900);
+    t = clamp(t, Math.min(8, maxD * .5), maxD);
+    const x = cam.x + dx * t, z = cam.z + dz * t;
+    const sn = this.snap;
+    this.gx = Math.round(x / sn) * sn;
+    this.gz = Math.round(z / sn) * sn;
+    const d = this.def();
+    const rotSwap = (this.rot % 2) === 1;
+    const w = (rotSwap ? d.d : d.w) / 2, dd = (rotSwap ? d.w : d.d) / 2;
+    this.ok = World.free(this.gx, this.gz, w, dd) && this.canAfford(d);
+  },
+  place() {
+    const d = this.def();
+    if (!this.canAfford(d)) { Snd.err(); Game.toast('❌ 資源が足りない'); return; }
+    if (!this.ok) { Snd.err(); Game.toast('❌ ここには建てられない'); return; }
+    for (const k in d.cost) Game.res[k] -= d.cost[k];
+    const si = World.newStruct(d.n, { cx: this.gx, cz: this.gz, name: d.n, built: true, pop: d.pop || 0 });
+    const s = World.structs[si];
+    if (d.prod) s.prod = d.prod;
+    const rot = this.rot * PI / 2;
+    const cs = Math.cos(rot), sn2 = Math.sin(rot);
+    for (const b of d.spec()) {
+      const wx = this.gx + (b.x * cs + b.z * sn2);
+      const wz = this.gz + (-b.x * sn2 + b.z * cs);
+      let q = null;
+      if (b.rx) {
+        qFromAxis(_tq, 0, 1, 0, rot);
+        qFromAxis(_tq2, 1, 0, 0, b.rx);
+        qMul(_tq3, _tq, _tq2);
+        q = new Float32Array(_tq3);
+      } else if (rot) q = new Float32Array(qYaw(rot));
+      World.add({
+        x: wx, y: b.y, z: wz, hx: b.hx, hy: b.hy, hz: b.hz, q,
+        r: b.c[0], g: b.c[1], b: b.c[2], style: b.s, mat: b.m, st: si
+      });
+    }
+    staticDirty = true;
+    Game.pop += d.pop || 0;
+    Game.buildScore += d.sc;
+    Snd.place();
+    Game.toast('🏗️ ' + d.n + ' を建設 +' + d.sc);
+    if (d.prod) Game.prodDirty = true;
+    this.refresh();
+  },
+  demolish() {
+    // カーソル付近の建設物を撤去（50%返還）
+    const x = this.gx, z = this.gz;
+    let best = -1, bd = 26 * 26;
+    for (let i = 0; i < World.structs.length; i++) {
+      const s = World.structs[i];
+      if (!s.built || s.collapsed) continue;
+      const d = (s.cx - x) ** 2 + (s.cz - z) ** 2;
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best < 0) { Snd.err(); return; }
+    const s = World.structs[best];
+    const def = BUILD.find(b => b.n === s.name);
+    if (def) for (const k in def.cost) Game.res[k] += def.cost[k] * .5;
+    for (const i of s.parts) { const p = World.parts[i]; if (p && !p.dead) World.removePart(i); }
+    s.collapsed = true;
+    Game.pop = Math.max(0, Game.pop - s.pop);
+    Game.buildScore = Math.max(0, Game.buildScore - (def ? def.sc : 0));
+    staticDirty = true;
+    Snd.crunch(.6); Game.toast('🧹 ' + s.name + ' を撤去（資源半分返却）');
+    this.refresh();
+  },
+  drawGhost(B) {
+    const d = this.def();
+    const rot = this.rot * PI / 2;
+    const cs = Math.cos(rot), sn2 = Math.sin(rot);
+    const okc = this.ok ? [.35, 1, .55] : [1, .3, .3];
+    const t = (Math.sin(Game.time * 6) * .25 + .75);
+    for (const b of d.spec()) {
+      const wx = this.gx + (b.x * cs + b.z * sn2);
+      const wz = this.gz + (-b.x * sn2 + b.z * cs);
+      let q;
+      if (b.rx) {
+        qFromAxis(_tq, 0, 1, 0, rot);
+        qFromAxis(_tq2, 1, 0, 0, b.rx);
+        qMul(_tq3, _tq, _tq2); q = _tq3;
+      } else q = qYaw(rot);
+      B.boxQ(wx, b.y, wz, b.hx * .98, b.hy * .98, b.hz * .98, q, okc[0] * t, okc[1] * t, okc[2] * t, 2);
+    }
+    // 枠
+    const rotSwap = (this.rot % 2) === 1;
+    const w = (rotSwap ? d.d : d.w) / 2 + .8, dd = (rotSwap ? d.w : d.d) / 2 + .8;
+    for (const s of [-1, 1]) {
+      B.box(this.gx + s * w, .3, this.gz, .4, .3, dd, 0, okc[0], okc[1], okc[2], 2);
+      B.box(this.gx, .3, this.gz + s * dd, w, .3, .4, 0, okc[0], okc[1], okc[2], 2);
+    }
+  },
+  refresh() {
+    const bar = document.getElementById('buildbar');
+    if (!bar || bar.classList.contains('hidden')) return;
+    let h = '';
+    BUILD.forEach((d, i) => {
+      const aff = this.canAfford(d);
+      const cost = Object.keys(d.cost).map(k => RES_INFO[k].i + Math.round(d.cost[k])).join(' ');
+      const ex = d.prod ? '<div class="c" style="color:#5dff8f">生産 ' + Object.keys(d.prod).map(k => RES_INFO[k].n + '+' + d.prod[k]).join(' ') + '</div>'
+        : (d.pop ? '<div class="c" style="color:#8fe0a6">人口 +' + d.pop + '</div>' : '');
+      h += '<div class="bslot' + (i === this.sel ? ' sel' : '') + (aff ? '' : ' no') + '" data-i="' + i + '">'
+        + '<div class="k">' + (i < 9 ? (i + 1) : '') + ' ' + d.ic + '</div>'
+        + '<div class="n">' + d.n + '</div>'
+        + '<div class="c">' + cost + '</div>' + ex + '</div>';
+    });
+    bar.innerHTML = h;
+    bar.querySelectorAll('.bslot').forEach(el => {
+      el.onclick = () => Builder.select(+el.dataset.i);
+    });
+  }
+};
+//////////////////// カメラ ////////////////////
+const Cam = {
+  x: 0, y: 20, z: 60, dx: 0, dy: 0, dz: -1,
+  dist: 1, shakeX: 0, shakeY: 0,
+  vp: new Float32Array(16), proj: new Float32Array(16), view: new Float32Array(16),
+  update(dt, W, H) {
+    const S = P.size;
+    const cp = Math.cos(P.pitch);
+    this.dx = Math.sin(P.yaw) * cp;
+    this.dy = Math.sin(P.pitch);
+    this.dz = Math.cos(P.yaw) * cp;
+    const want = S * (Builder.on ? 5.4 : 3.6) + clamp(S * .6, .8, 10);
+    this.dist = smooth(this.dist, want * Game.zoom, dt * 6);
+    const tx = P.x, ty = P.y + S * (Builder.on ? 1.0 : .72), tz = P.z;
+    let cx = tx - this.dx * this.dist;
+    let cy = ty - this.dy * this.dist + S * .18;
+    let cz = tz - this.dz * this.dist;
+    const minY = S * .12 + .8;
+    if (cy < minY) cy = minY;
+    this.x = smooth(this.x, cx, dt * 22);
+    this.y = smooth(this.y, cy, dt * 22);
+    this.z = smooth(this.z, cz, dt * 22);
+    // シェイク
+    const sh = clamp(Game.shake, 0, 22) * (S * .006 + .12);
+    this.shakeX = rnd(-sh, sh); this.shakeY = rnd(-sh, sh);
+    const near = clamp(S * .06, .05, 3);
+    const far = clamp(S * 60 + 600, 700, 9000);
+    m4perspective(this.proj, 1.05, W / H, near, far);
+    const ex = this.x + this.shakeX, ey = this.y + this.shakeY, ez = this.z;
+    m4lookAt(this.view, ex, ey, ez, tx + this.shakeX, ty + this.shakeY, tz, 0, 1, 0);
+    m4mul(this.vp, this.proj, this.view);
+    this.ex = ex; this.ey = ey; this.ez = ez;
+    this.far = far;
+  }
+};
+
+//////////////////// ゲーム本体 ////////////////////
+const Game = {
+  state: 'title', time: 0, shake: 0, zoom: 1,
+  res: { wood: 60, concrete: 40, steel: 20, neon: 10 },
+  score: 0, buildScore: 0, pop: 0, combo: 0, comboT: 0, best: 0,
+  dmgFlash: 0, difficulty: 0, night: .3, nightTarget: .3,
+  destroyed: 0, prodT: 0, stageKey: 'rural', stage: null,
+  toastQ: [],
+
+  start(charIdx, size, stageKey) {
+    const ch = CHARS[charIdx];
+    this.stageKey = stageKey;
+    const stage = STAGES[stageKey];
+    this.stage = stage;
+    World.reset(); World.size = stage.size;
+    Debris.init(); Fx.init(); Enemies.reset(); Cits.reset();
+    const rng = makeRng(stageKey === 'rural' ? 20260910 : 77777);
+    const info = stage.gen(rng);
+    this.night = stage.night; this.nightTarget = stage.night;
+    this.res = { wood: 60, concrete: 40, steel: 20, neon: 10 };
+    this.score = 0; this.buildScore = 0; this.pop = 0;
+    this.combo = 0; this.comboT = 0; this.destroyed = 0;
+    this.shake = 0; this.dmgFlash = 0; this.difficulty = 0;
+    this.zoom = 1; this.time = 0;
+    // 建設済み人口を初期集計
+    let pop0 = 0;
+    for (const s of World.structs) pop0 += s.pop || 0;
+    this.popStart = pop0; this.pop = pop0;
+    P.reset(ch, size, info.spawn);
+    P.yawBody = 0;
+    Builder.on = false; Builder.sel = 0; Builder.rot = 0;
+    document.getElementById('buildbar').classList.add('hidden');
+    document.getElementById('cross').classList.add('hidden');
+    staticDirty = true;
+    this.state = 'play';
+    UI.showHud(true);
+    UI.charLabel();
+    this.badge(ch.name + '　' + fmtSize(size), '#ffd400');
+    this.toast('🔥 暴れろ！ 街を壊せ！');
+    this.toast('💡 B キーで建設モード');
+  },
+
+  onDestroy(part, opts) {
+    const v = part.vol;
+    const pts = Math.round(clamp(v * 2.2, 3, 4000));
+    this.score += pts * (1 + Math.min(this.combo, 60) * .02);
+    this.destroyed++;
+    if (!opts || !opts.collapse) { this.combo++; this.comboT = 2.2; }
+    this.difficulty = clamp(this.score / 120000, 0, 1);
+  },
+
+  onDeath() {
+    this.state = 'dead';
+    document.exitPointerLock && document.exitPointerLock();
+    Snd.bigboom();
+    UI.showDead();
+  },
+
+  toast(msg) {
+    const box = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = 'toast'; el.textContent = msg;
+    box.appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = 0; setTimeout(() => el.remove(), 420); }, 2400);
+    while (box.children.length > 6) box.firstChild.remove();
+  },
+  badge(txt, col) {
+    const el = document.getElementById('modeBadge');
+    el.textContent = txt;
+    el.style.color = col || '#fff';
+    el.style.transition = 'none'; el.style.opacity = 1; el.style.transform = 'translate(-50%,-50%) scale(1.15)';
+    requestAnimationFrame(() => {
+      el.style.transition = 'opacity .9s ease-out, transform .9s ease-out';
+      el.style.opacity = 0; el.style.transform = 'translate(-50%,-50%) scale(1)';
+    });
+  },
+
+  update(dt) {
+    this.time += dt;
+    Snd.tickMusic(dt);
+    if (this.state !== 'play') { Fx.update(dt); Debris.update(dt); return; }
+
+    P.update(dt, Keys);
+    if (P.beaming) P.fireBeam(dt); else P.beamEnd = null;
+    Debris.update(dt);
+    Fx.update(dt);
+    Enemies.update(dt);
+    Cits.update(dt);
+
+    // 投げた瓦礫のダメージ
+    for (let i = 0; i < Debris.cap; i++) {
+      const d = Debris.a[i];
+      if (!d.alive || !d.thrown) continue;
+      d.thrown -= dt;
+      if (d.thrown <= 0) { d.thrown = 0; continue; }
+      const sp = Math.hypot(d.vx, d.vy, d.vz);
+      if (sp < 12) continue;
+      const hit = World.hitBox(d.x, d.y, d.z, Math.max(d.hx, d.hy, d.hz) * 1.6);
+      if (hit) {
+        World.damage(d.x, d.y, d.z, Math.max(d.hx, d.hz) * 3 + 4, P.power() * 1.8);
+        Fx.boom(d.x, d.y, d.z, 3);
+        Snd.crunch(1);
+        d.thrown = 0; d.vx *= -.2; d.vy *= .2; d.vz *= -.2;
+      }
+    }
+
+    // 生産
+    this.prodT -= dt;
+    if (this.prodT <= 0) {
+      this.prodT = 1;
+      for (const s of World.structs) {
+        if (!s.prod || s.collapsed) continue;
+        for (const k in s.prod) this.res[k] += s.prod[k];
+      }
+    }
+
+    if (Builder.on) Builder.updateCursor();
+
+    this.shake = Math.max(0, this.shake - dt * 14);
+    this.dmgFlash = Math.max(0, this.dmgFlash - dt * 2.6);
+    this.comboT -= dt;
+    if (this.comboT <= 0 && this.combo > 0) {
+      if (this.combo >= 12) this.toast('🔥 ' + this.combo + ' コンボ！ +' + (this.combo * 120));
+      if (this.combo >= 12) this.score += this.combo * 120;
+      this.combo = 0;
+    }
+    this.night = smooth(this.night, this.nightTarget, dt * 2);
+  },
+
+  render(W, H) {
+    const st = this.stage || STAGES.rural;
+    // 空の色（昼夜補間）
+    const dayFog = hex(st.fogTop), nightFog = hex(st.sky);
+    const n = this.night;
+    const fog = [lerp(dayFog[0], nightFog[0], n), lerp(dayFog[1], nightFog[1], n), lerp(dayFog[2], nightFog[2], n)];
+    gl.clearColor(fog[0], fog[1], fog[2], 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(prog);
+    gl.uniformMatrix4fv(U.uVP, false, Cam.vp);
+    const sl = Math.hypot(st.sun[0], st.sun[1], st.sun[2]);
+    gl.uniform3f(U.uSun, st.sun[0] / sl, st.sun[1] / sl, st.sun[2] / sl);
+    const sc = hex(st.sunCol), am = hex(st.amb);
+    const k = 1 - n * .55;
+    gl.uniform3f(U.uSunCol, sc[0] * k, sc[1] * k, sc[2] * k);
+    gl.uniform3f(U.uAmb, lerp(am[0], nightFog[0] * 1.6, n * .5) + .07, lerp(am[1], nightFog[1] * 1.6, n * .5) + .07, lerp(am[2], nightFog[2] * 1.8, n * .5) + .10);
+    gl.uniform3f(U.uFogCol, fog[0], fog[1], fog[2]);
+    gl.uniform3f(U.uCam, Cam.ex, Cam.ey, Cam.ez);
+    gl.uniform1f(U.uFogD, st.fogD * clamp(1400 / (P.size * 10 + 300), .35, 4.5));
+    gl.uniform1f(U.uNight, n);
+    gl.uniform1f(U.uTime, this.time);
+
+    if (staticDirty) {
+      SB.clear();
+      const parts = World.parts;
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        if (!p || p.dead) continue;
+        if (p.q) SB.boxQ(p.x, p.y, p.z, p.hx, p.hy, p.hz, p.q, p.r, p.g, p.b, p.style);
+        else SB.box(p.x, p.y, p.z, p.hx, p.hy, p.hz, p.rot, p.r, p.g, p.b, p.style);
+      }
+      staticDirty = false;
+    }
+    SB.upload(); SB.draw();
+
+    DB.clear();
+    // 影
+    const S = P.size;
+    if (P.y < S * 6) {
+      const sc2 = clamp(1 - P.y / (S * 6), .15, 1);
+      const r = S * .34 * sc2;
+      for (let i = 0; i < 3; i++)
+        DB.box(P.x, .07 + i * .002, P.z, r, .05, r * .52, P.yawBody + i * 1.047, .07, .09, .07, 0);
+    }
+    for (const e of Enemies.a) if (e.y < 200)
+      for (let i = 0; i < 2; i++) DB.box(e.x, .07 + i * .002, e.z, 5.5, .04, 2.8, e.yaw + i * 1.57, .08, .09, .09, 0);
+    Debris.draw(DB);
+    Fx.draw(DB);
+    Enemies.draw(DB);
+    Cits.draw(DB);
+    P.draw(DB);
+    P.drawBeam(DB);
+    if (Builder.on && this.state === 'play') Builder.drawGhost(DB);
+    DB.upload(); DB.draw();
+  }
+};
+
+function fmtSize(s) {
+  return s < 1 ? (s * 100).toFixed(0) + ' cm' : s.toFixed(s < 10 ? 1 : 0) + ' m';
+}
+
+//////////////////// 入力 ////////////////////
+const Keys = {};
+let locked = false;
+
+function setupInput(canvas) {
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Tab') e.preventDefault();
+    if (Keys[e.code]) { return; }
+    Keys[e.code] = true;
+    if (Game.state === 'title') return;
+    switch (e.code) {
+      case 'KeyF':
+        P.flying = !P.flying;
+        Game.badge(P.flying ? '飛 行 ON' : '飛 行 OFF', P.flying ? '#37e6ff' : '#ffb9a8');
+        if (P.flying) P.vy = Math.max(P.vy, 4);
+        Snd.ui();
+        break;
+      case 'KeyQ': if (Game.state === 'play') P.roar(); break;
+      case 'KeyG': if (Game.state === 'play' && !Builder.on) P.tryGrab(); break;
+      case 'KeyB': if (Game.state === 'play') Builder.toggle(); break;
+      case 'KeyR': if (Builder.on) { Builder.rot = (Builder.rot + 1) % 4; Snd.ui(); } break;
+      case 'KeyN':
+        Game.nightTarget = Game.nightTarget > .5 ? .08 : 1;
+        Game.badge(Game.nightTarget > .5 ? '夜' : '昼', '#ffd400');
+        break;
+      case 'KeyM': Snd.musicOn = !Snd.musicOn; Game.toast(Snd.musicOn ? '🎵 BGM ON' : '🔇 BGM OFF'); break;
+      case 'Space':
+        if (Game.state === 'play' && !P.flying && P.grounded) {
+          P.vy = 11 + P.size * .55;
+          P.grounded = false;
+        }
+        break;
+      case 'Escape':
+        if (Game.state === 'play') UI.pause();
+        break;
+    }
+    if (Builder.on && e.code.startsWith('Digit')) {
+      const n = +e.code.slice(5);
+      if (n >= 1 && n <= 9) Builder.select(n - 1);
+    }
+  });
+  window.addEventListener('keyup', e => { Keys[e.code] = false; });
+  window.addEventListener('blur', () => { for (const k in Keys) Keys[k] = false; P.beaming = false; });
+
+  canvas.addEventListener('click', () => {
+    if (Game.state === 'play' && !locked) canvas.requestPointerLock();
+  });
+  document.addEventListener('pointerlockchange', () => {
+    locked = document.pointerLockElement === canvas;
+    if (!locked && Game.state === 'play') UI.pause();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!locked) return;
+    const s = .0022;
+    P.yaw -= e.movementX * s;
+    P.pitch = clamp(P.pitch - e.movementY * s, -1.35, 1.15);
+    if (!Keys['KeyW'] && !Keys['KeyA'] && !Keys['KeyS'] && !Keys['KeyD']) {
+      let d = P.yaw - P.yawBody;
+      while (d > PI) d -= TAU; while (d < -PI) d += TAU;
+      if (Math.abs(d) > .9) P.yawBody += d * .06;
+    }
+  });
+  canvas.addEventListener('mousedown', e => {
+    if (!locked || Game.state !== 'play') return;
+    if (e.button === 0) { if (Builder.on) Builder.place(); else P.punch(); }
+    if (e.button === 2) {
+      if (Builder.on) Builder.demolish();
+      else { P.beaming = true; P.beamT = 0; Snd.resume(); }
+    }
+  });
+  window.addEventListener('mouseup', e => { if (e.button === 2) P.beaming = false; });
+  window.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('wheel', e => {
+    if (Game.state !== 'play') return;
+    if (Builder.on) Builder.select(Builder.sel + (e.deltaY > 0 ? 1 : -1));
+    else Game.zoom = clamp(Game.zoom * (e.deltaY > 0 ? 1.12 : .89), .45, 3.2);
+  }, { passive: true });
+}
+
+//////////////////// UI ////////////////////
+const UI = {
+  charIdx: 3, size: 50, stage: 'rural',
+  init() {
+    // キャラ
+    const cg = document.getElementById('charGrid');
+    cg.innerHTML = CHARS.map((c, i) =>
+      `<div class="card${i === this.charIdx ? ' sel' : ''}" data-i="${i}">
+        <div class="ic">${c.icon}</div>
+        <div class="nm">${c.name}</div>
+        <div class="sz">きほん ${fmtSize(c.size)}</div>
+        <div class="ds">${c.desc}</div>
+      </div>`).join('');
+    cg.querySelectorAll('.card').forEach(el => el.onclick = () => {
+      this.charIdx = +el.dataset.i;
+      cg.querySelectorAll('.card').forEach(x => x.classList.remove('sel'));
+      el.classList.add('sel');
+      this.setSize(CHARS[this.charIdx].size);
+      Snd.init(); Snd.ui();
+    });
+    // ステージ
+    const sg = document.getElementById('stageGrid');
+    sg.innerHTML = Object.keys(STAGES).map(k =>
+      `<div class="card stage-card${k === this.stage ? ' sel' : ''}" data-k="${k}">
+        <div class="ic">${STAGES[k].icon}</div>
+        <div class="nm">${STAGES[k].name}</div>
+        <div class="ds">${STAGES[k].desc}</div>
+      </div>`).join('');
+    sg.querySelectorAll('.card').forEach(el => el.onclick = () => {
+      this.stage = el.dataset.k;
+      sg.querySelectorAll('.card').forEach(x => x.classList.remove('sel'));
+      el.classList.add('sel');
+      Snd.init(); Snd.ui();
+    });
+    // サイズ
+    const sl = document.getElementById('sizeSlider');
+    sl.addEventListener('input', () => {
+      this.size = 0.25 * Math.pow(1200, sl.value / 1000);
+      document.getElementById('sizeVal').textContent = fmtSize(this.size);
+    });
+    document.querySelectorAll('.chip').forEach(el => el.onclick = () => {
+      this.setSize(+el.dataset.size); Snd.init(); Snd.ui();
+    });
+    this.setSize(CHARS[this.charIdx].size);
+    // 資源バー
+    document.getElementById('resbar').innerHTML = RES_KEYS.map(k =>
+      `<div class="res"><i>${RES_INFO[k].i}</i>${RES_INFO[k].n} <span class="v" id="res_${k}">0</span></div>`).join('')
+      + `<div class="res"><i>🧱</i>破壊数 <span class="v" id="res_des">0</span></div>`;
+
+    document.getElementById('startBtn').onclick = () => this.startGame();
+    document.getElementById('resumeBtn').onclick = () => this.resume();
+    document.getElementById('titleBtn').onclick = () => this.toTitle();
+    document.getElementById('reviveBtn').onclick = () => this.revive();
+    document.getElementById('pause').addEventListener('click', e => {
+      if (e.target.id === 'pause') this.resume();
+    });
+    document.getElementById('pauseKeys').innerHTML =
+      'WASD 移動 / マウス 視点 / Space ジャンプ・上昇 / Ctrl 下降 / Shift ダッシュ<br>' +
+      '左クリック なぐる / 右クリック 熱線 / Q 咆哮 / G つかむ・投げる / F 飛行<br>' +
+      'B 建設モード（建設中：左クリック 設置・右クリック 撤去・R 回転・ホイール 選択）<br>' +
+      'N 昼夜きりかえ / M BGM / ホイール ズーム';
+  },
+  setSize(s) {
+    this.size = s;
+    const sl = document.getElementById('sizeSlider');
+    sl.value = clamp(1000 * Math.log(s / 0.25) / Math.log(1200), 0, 1000);
+    document.getElementById('sizeVal').textContent = fmtSize(s);
+  },
+  startGame() {
+    Snd.init(); Snd.resume();
+    document.getElementById('title').classList.add('hidden');
+    document.getElementById('loading').classList.remove('hidden');
+    setTimeout(() => {
+      Game.start(this.charIdx, this.size, this.stage);
+      document.getElementById('loading').classList.add('hidden');
+      const cv = document.getElementById('cv');
+      cv.requestPointerLock && cv.requestPointerLock();
+    }, 60);
+  },
+  showHud(v) { document.getElementById('hud').classList.toggle('hidden', !v); },
+  charLabel() {
+    document.getElementById('charLabel').textContent =
+      P.char.icon + ' ' + P.char.name + '　' + fmtSize(P.size) + '　' + (Game.stage ? Game.stage.name : '');
+  },
+  pause() {
+    if (Game.state !== 'play') return;
+    Game.state = 'pause';
+    P.beaming = false;
+    document.exitPointerLock && document.exitPointerLock();
+    document.getElementById('pause').classList.remove('hidden');
+    document.getElementById('pauseStats').innerHTML = this.stats();
+  },
+  resume() {
+    if (Game.state !== 'pause') return;
+    document.getElementById('pause').classList.add('hidden');
+    Game.state = 'play';
+    const cv = document.getElementById('cv');
+    cv.requestPointerLock && cv.requestPointerLock();
+    Snd.resume();
+  },
+  stats() {
+    return [
+      ['破壊スコア', Math.round(Game.score).toLocaleString()],
+      ['復興スコア', Math.round(Game.buildScore).toLocaleString()],
+      ['こわした数', Game.destroyed.toLocaleString()],
+      ['人口', Math.round(Game.pop).toLocaleString()],
+    ].map(s => `<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}</div></div>`).join('');
+  },
+  showDead() {
+    document.getElementById('dead').classList.remove('hidden');
+    document.getElementById('deadStats').innerHTML = this.stats();
+  },
+  revive() {
+    document.getElementById('dead').classList.add('hidden');
+    P.dead = false; P.hp = P.hpMax; P.y = Math.max(P.y, P.size * 2);
+    P.flying = true;
+    Enemies.a.length = 0; Enemies.shots.length = 0; Enemies.spawnT = 12;
+    Game.state = 'play';
+    Game.toast('💪 よみがえった！');
+    const cv = document.getElementById('cv');
+    cv.requestPointerLock && cv.requestPointerLock();
+  },
+  toTitle() {
+    document.getElementById('pause').classList.add('hidden');
+    document.getElementById('dead').classList.add('hidden');
+    document.getElementById('buildbar').classList.add('hidden');
+    this.showHud(false);
+    Game.state = 'title';
+    document.getElementById('title').classList.remove('hidden');
+  },
+  tick() {
+    if (Game.state === 'title') return;
+    for (const k of RES_KEYS) {
+      const el = document.getElementById('res_' + k);
+      if (el) el.textContent = Math.floor(Game.res[k]).toLocaleString();
+    }
+    const de = document.getElementById('res_des');
+    if (de) de.textContent = Game.destroyed.toLocaleString();
+    document.getElementById('scDes').textContent = Math.round(Game.score).toLocaleString();
+    document.getElementById('scBld').textContent = Math.round(Game.buildScore).toLocaleString();
+    document.getElementById('pop').textContent = Math.round(Game.pop).toLocaleString();
+    document.getElementById('bHp').style.width = (P.hp / P.hpMax * 100) + '%';
+    document.getElementById('bEn').style.width = (P.en / P.enMax * 100) + '%';
+    const cb = document.getElementById('combo');
+    if (Game.combo > 3) {
+      cb.style.opacity = clamp(Game.comboT / 1.2, 0, 1);
+      cb.querySelector('.n').textContent = Game.combo;
+      cb.style.transform = 'translateX(-50%) scale(' + (1 + clamp(Game.combo, 0, 60) * .006) + ')';
+    } else cb.style.opacity = 0;
+    document.getElementById('dmgv').style.opacity = Game.dmgFlash * .85;
+    const hint = document.getElementById('hint');
+    hint.innerHTML = Builder.on
+      ? '🏗️ <b>建設モード</b>　左クリック=設置　右クリック=撤去　R=回転　ホイール/1-9=えらぶ　B=もどる'
+      : '👊 左クリック=なぐる　右=熱線　Q=咆哮　G=つかむ/投げる　F=' + (P.flying ? '着地' : '飛ぶ') + '　B=建設';
+    if (this.lastBuild !== Game.res.wood + Game.res.steel + Game.res.concrete + Game.res.neon) {
+      this.lastBuild = Game.res.wood + Game.res.steel + Game.res.concrete + Game.res.neon;
+      if (Builder.on) Builder.refresh();
+    }
+  }
+};
+
+//////////////////// 起動 ////////////////////
+let SB, DB, canvas;
+function boot() {
+  canvas = document.getElementById('cv');
+  let ok = false;
+  try { ok = initGL(canvas); } catch (e) { console.error(e); }
+  if (!ok) {
+    document.body.innerHTML = '<div style="padding:40px;font-size:16px;line-height:2">' +
+      '<h1 style="color:#ff2b2b">WebGL2 が使えません</h1>' +
+      'このゲームには WebGL2 対応ブラウザが必要です。<br>Chrome / Edge / Firefox の最新版でひらいてください。<br>' +
+      'ハードウェアアクセラレーションが無効になっている場合は、ブラウザの設定でオンにしてください。</div>';
+    return;
+  }
+  SB = new Batch(46000);
+  DB = new Batch(22000);
+  Debris.init(); Fx.init();
+  setupInput(canvas);
+  UI.init();
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(loop);
+}
+let VW = 1, VH = 1, renderScale = 1;
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.6) * renderScale;
+  VW = Math.max(1, Math.floor(innerWidth * dpr));
+  VH = Math.max(1, Math.floor(innerHeight * dpr));
+  canvas.width = VW; canvas.height = VH;
+  gl.viewport(0, 0, VW, VH);
+}
+// 重いPCでも動くように解像度を自動調整
+let perfN = 0, perfSum = 0, perfWarned = false;
+function perfCheck(dt) {
+  perfSum += dt; perfN++;
+  if (perfN < 90) return;
+  const avg = perfSum / perfN;
+  perfN = 0; perfSum = 0;
+  if (avg > 1 / 32 && renderScale > .5) {
+    renderScale = Math.max(.5, renderScale - .15);
+    resize();
+    if (!perfWarned) { perfWarned = true; Game.toast('⚙️ 動作が重いので解像度を下げました'); }
+  } else if (avg < 1 / 58 && renderScale < 1) {
+    renderScale = Math.min(1, renderScale + .1);
+    resize();
+  }
+}
+let last = 0;
+function loop(t) {
+  requestAnimationFrame(loop);
+  const now = t * .001;
+  let dt = last ? now - last : .016;
+  last = now;
+  dt = Math.min(dt, .05);
+  if (Game.state === 'title') { UI.tick(); return; }
+  perfCheck(dt);
+  Game.update(dt);
+  Cam.update(dt, VW, VH);
+  Game.render(VW, VH);
+  UI.tick();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+</script>
+</body>
+</html>
